@@ -1,0 +1,68 @@
+:root {
+  --color-bass: #ff1e00;
+  --color-low-mid: #ff6c00;
+  --color-high-mid: #ffde00;
+  --color-treble: #fffddd;
+  --color-black: #160106;
+  --color-background: #111;
+  --color-text: #fff;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-family: Arial, sans-serif;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.canvas-container {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.controls {
+  background-color: rgba(0, 0, 0, 0.7);
+  padding: 1rem;
+  border-top: 1px solid #333;
+}
+
+.control-group {
+  margin-bottom: 1rem;
+}
+
+.control-group h3 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  color: var(--color-high-mid);
+}
+
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+input[type="checkbox"] {
+  margin-right: 0.5rem;
+}
+
+button {
+  background-color: var(--color-bass);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+button:hover {
+  background-color: var(--color-low-mid);
+}
