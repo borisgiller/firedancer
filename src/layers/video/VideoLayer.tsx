@@ -1,6 +1,9 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { useThree } from '@react-three/fiber';
+import { useThree, extend } from '@react-three/fiber';
 import * as THREE from 'three';
+import { VideoTexture } from 'three';
+
+extend({ VideoTexture: THREE.VideoTexture });
 
 interface VideoLayerProps {
   active: boolean;
