@@ -1,0 +1,20 @@
+{
+  "name": "firedancer",
+  "description": "A React application that transforms webcam feed into a fire effect and overlays dynamic animations that respond to microphone input.",
+  "repository": "https://github.com/borisgiller/firedancer",
+  "keywords": ["react", "vite", "three.js", "webcam", "audio"],
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ],
+  "env": {
+    "NODE_ENV": {
+      "description": "Environment for the application",
+      "value": "production"
+    }
+  },
+  "scripts": {
+    "postdeploy": "npm run build"
+  }
+}
