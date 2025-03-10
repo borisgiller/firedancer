@@ -3,7 +3,18 @@ import { useThree, extend } from '@react-three/fiber';
 import * as THREE from 'three';
 import { VideoTexture } from 'three';
 
-extend({ VideoTexture: THREE.VideoTexture });
+// Properly register VideoTexture with R3F
+class Video extends THREE.VideoTexture {
+  constructor(video: HTMLVideoElement) {
+    super(video);
+    this.minFilter = THREE.LinearFilter;
+    this.magFilter = THREE.LinearFilter;
+  }
+}
+
+// Extend THREE namespace with our custom Video class
+THREE.Video = Video;
+extend({ Video });
 
 interface VideoLayerProps {
   active: boolean;
