@@ -1,60 +1,45 @@
-# Fire Dancer
+# Firedancer
 
-A React application that transforms webcam feed into a fire effect and overlays dynamic animations that respond to microphone input.
+Webcam-driven party and projection visuals for playful installations.
 
-## Features
+Firedancer turns camera and microphone input into reactive visual layers: flame-treated video, audio-reactive particles, waveform motion, and geometric animations. It is a side quest built for experimentation, performance rooms, projection surfaces, and small interactive party setups.
 
-- Video layer with fire effect
-- Particle sparkles that respond to audio frequencies
-- Vertical waveform visualization
-- Triangles that expand and spin with the music
-- Surprise animation feature
+## Why It Exists
 
-## Current Status
+This repo is public proof of a small interactive media build: camera input, browser graphics, audio response, and a simple Vite/React development loop. The goal is not a polished commercial product; it is a clean open-source starting point for webcam-driven visual experiments.
 
-Phase 1: Basic structure with video layer and black and white effect.
+## What Is Inside
+
+- React + Vite app structure.
+- Webcam video layer with fire/color treatment.
+- Audio-reactive particles and waveform visualization.
+- Geometric animation layers that respond to music.
+- GLSL shader support through Vite.
 
 ## Development
 
-### Prerequisites
+Prerequisites:
 
-- Node.js (v18 or higher)
-- npm or yarn
+- Node.js 18+
+- npm
 
-### Installation
+Install and run locally:
 
 ```bash
-# Install dependencies
 npm install
-
-# Start development server
 npm run dev
 ```
 
-### Building for Production
+Build and preview:
 
 ```bash
-# Build the project
 npm run build
-
-# Preview the production build
 npm run preview
 ```
 
-## Deployment
+## Notes
 
-This project is configured for deployment on Railway.com. It will automatically deploy when changes are pushed to the main branch of the GitHub repository.
-
-## Project Structure
-
-- `src/layers/` - Contains the different visual layers
-  - `video/` - Webcam processing with fire effect
-  - `particles/` - Audio-reactive particle effects
-  - `waveform/` - Audio waveform visualization
-  - `triangles/` - Audio-reactive triangle animations
-  - `surprise/` - Special surprise animation
-- `src/components/` - React components
-- `src/shaders/` - GLSL shader files
+The app requests camera and microphone access in the browser. Keep real event/client deployments separate from this public repo if they contain private assets, venue-specific content, or credentials.
 
 ## License
 
