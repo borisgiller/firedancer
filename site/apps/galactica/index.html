@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Galactica Kaleidoscope</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Monoton&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <canvas id="stage" aria-label="Galactica Kaleidoscope projection canvas"></canvas>
+  <video id="videoPreview" autoplay playsinline muted></video>
+  <div id="complimentLayer" aria-live="polite" aria-label="Cosmic compliments"></div>
+
+  <aside id="operatorPanel" aria-label="Operator controls">
+    <header class="panelHeader">
+      <div>
+        <h1>Galactica Kaleidoscope</h1>
+        <p id="statusText">Waiting for camera.</p>
+      </div>
+      <button id="fullscreenBtn" class="iconButton" type="button" title="Fullscreen" aria-label="Fullscreen">[ ]</button>
+    </header>
+
+    <section class="controlGroup" aria-label="Mandala controls">
+      <div class="groupTitle">Mandala</div>
+      <label class="controlRow" for="sliceCount">
+        <span>Slices</span>
+        <input id="sliceCount" data-control="sliceCount" type="range" min="3" max="16" step="1" value="6">
+        <output id="sliceCountReadout">6</output>
+      </label>
+      <label class="controlRow" for="baseRotationSpeed">
+        <span>Base spin</span>
+        <input id="baseRotationSpeed" data-control="baseRotationSpeed" type="range" min="-40" max="40" step="1" value="5">
+        <output id="baseRotationSpeedReadout">5</output>
+      </label>
+      <label class="controlRow" for="mandalaBrightness">
+        <span>Mandala bright</span>
+        <input id="mandalaBrightness" data-control="mandalaBrightness" type="range" min="0" max="300" step="1" value="100">
+        <output id="mandalaBrightnessReadout">100</output>
+      </label>
+      <label class="controlRow" for="mandalaContrast">
+        <span>Mandala contrast</span>
+        <input id="mandalaContrast" data-control="mandalaContrast" type="range" min="0" max="300" step="1" value="108">
+        <output id="mandalaContrastReadout">108</output>
+      </label>
+      <label class="controlRow" for="colorGrade">
+        <span>Nebula</span>
+        <input id="colorGrade" data-control="colorGrade" type="range" min="0" max="100" step="1" value="72">
+        <output id="colorGradeReadout">72</output>
+      </label>
+      <label class="controlRow" for="mandalaHue">
+        <span>Mandala hue</span>
+        <input id="mandalaHue" data-control="mandalaHue" type="range" min="0" max="100" step="1" value="0">
+        <output id="mandalaHueReadout">0</output>
+      </label>
+      <label class="controlRow" for="mandalaColorSaturation">
+        <span>Mandala sat</span>
+        <input id="mandalaColorSaturation" data-control="mandalaColorSaturation" type="range" min="0" max="100" step="1" value="78">
+        <output id="mandalaColorSaturationReadout">78</output>
+      </label>
+      <label class="controlRow" for="starfield">
+        <span>Stars</span>
+        <input id="starfield" data-control="starfield" type="range" min="0" max="100" step="1" value="52">
+        <output id="starfieldReadout">52</output>
+      </label>
+      <label class="controlRow" for="starHue">
+        <span>Star hue</span>
+        <input id="starHue" data-control="starHue" type="range" min="0" max="100" step="1" value="0">
+        <output id="starHueReadout">0</output>
+      </label>
+      <label class="controlRow" for="starSaturation">
+        <span>Star sat</span>
+        <input id="starSaturation" data-control="starSaturation" type="range" min="0" max="100" step="1" value="72">
+        <output id="starSaturationReadout">72</output>
+      </label>
+      <label class="controlRow" for="starBrightness">
+        <span>Star bright</span>
+        <input id="starBrightness" data-control="starBrightness" type="range" min="0" max="400" step="1" value="235">
+        <output id="starBrightnessReadout">235</output>
+      </label>
+      <label class="controlRow" for="starContrast">
+        <span>Star contrast</span>
+        <input id="starContrast" data-control="starContrast" type="range" min="0" max="300" step="1" value="170">
+        <output id="starContrastReadout">170</output>
+      </label>
+      <label class="controlRow" for="starburstBrightness">
+        <span>Burst bright</span>
+        <input id="starburstBrightness" data-control="starburstBrightness" type="range" min="0" max="400" step="1" value="50">
+        <output id="starburstBrightnessReadout">50</output>
+      </label>
+      <label class="controlRow" for="starburstScale">
+        <span>Burst scale</span>
+        <input id="starburstScale" data-control="starburstScale" type="range" min="20" max="300" step="1" value="20">
+        <output id="starburstScaleReadout">20</output>
+      </label>
+      <label class="controlRow" for="starSpeed">
+        <span>Star speed</span>
+        <input id="starSpeed" data-control="starSpeed" type="range" min="0" max="300" step="1" value="115">
+        <output id="starSpeedReadout">115</output>
+      </label>
+      <label class="controlRow" for="starStreaks">
+        <span>Star streaks</span>
+        <input id="starStreaks" data-control="starStreaks" type="range" min="0" max="200" step="1" value="110">
+        <output id="starStreaksReadout">110</output>
+      </label>
+      <label class="controlRow" for="starDensity">
+        <span>Star density</span>
+        <input id="starDensity" data-control="starDensity" type="range" min="0" max="200" step="1" value="115">
+        <output id="starDensityReadout">115</output>
+      </label>
+      <label class="controlRow" for="glowStrength">
+        <span>Glow</span>
+        <input id="glowStrength" data-control="glowStrength" type="range" min="0" max="100" step="1" value="74">
+        <output id="glowStrengthReadout">74</output>
+      </label>
+    </section>
+
+    <section class="controlGroup" aria-label="Face echo controls">
+      <div class="groupTitle">Face Echoes</div>
+      <label class="controlRow" for="faceRotationSpeed">
+        <span>Echo spin</span>
+        <input id="faceRotationSpeed" data-control="faceRotationSpeed" type="range" min="-50" max="50" step="1" value="-8">
+        <output id="faceRotationSpeedReadout">-8</output>
+      </label>
+      <label class="controlRow" for="faceOpacity">
+        <span>Opacity</span>
+        <input id="faceOpacity" data-control="faceOpacity" type="range" min="0" max="100" step="1" value="76">
+        <output id="faceOpacityReadout">76</output>
+      </label>
+      <label class="controlRow" for="faceHue">
+        <span>Face hue</span>
+        <input id="faceHue" data-control="faceHue" type="range" min="0" max="100" step="1" value="0">
+        <output id="faceHueReadout">0</output>
+      </label>
+      <label class="controlRow" for="faceSaturation">
+        <span>Face sat</span>
+        <input id="faceSaturation" data-control="faceSaturation" type="range" min="0" max="100" step="1" value="78">
+        <output id="faceSaturationReadout">78</output>
+      </label>
+      <label class="controlRow" for="faceBrightness">
+        <span>Face bright</span>
+        <input id="faceBrightness" data-control="faceBrightness" type="range" min="0" max="300" step="1" value="114">
+        <output id="faceBrightnessReadout">114</output>
+      </label>
+      <label class="controlRow" for="faceContrast">
+        <span>Face contrast</span>
+        <input id="faceContrast" data-control="faceContrast" type="range" min="0" max="300" step="1" value="112">
+        <output id="faceContrastReadout">112</output>
+      </label>
+      <label class="controlRow" for="faceScale">
+        <span>Face scale</span>
+        <input id="faceScale" data-control="faceScale" type="range" min="55" max="320" step="1" value="155">
+        <output id="faceScaleReadout">155</output>
+      </label>
+      <label class="controlRow" for="faceRadiusResponse">
+        <span>Jump radius</span>
+        <input id="faceRadiusResponse" data-control="faceRadiusResponse" type="range" min="0" max="100" step="1" value="55">
+        <output id="faceRadiusResponseReadout">55</output>
+      </label>
+      <label class="controlRow" for="edgeAbstraction">
+        <span>Edge melt</span>
+        <input id="edgeAbstraction" data-control="edgeAbstraction" type="range" min="0" max="100" step="1" value="58">
+        <output id="edgeAbstractionReadout">58</output>
+      </label>
+    </section>
+
+    <section class="controlGroup" aria-label="Audio controls">
+      <div class="groupTitle">Signal Rings</div>
+      <label class="controlRow" for="audioSensitivity">
+        <span>Mic gain</span>
+        <input id="audioSensitivity" data-control="audioSensitivity" type="range" min="0" max="250" step="1" value="100">
+        <output id="audioSensitivityReadout">100</output>
+      </label>
+      <label class="controlRow" for="bassIntensity">
+        <span>Bass</span>
+        <input id="bassIntensity" data-control="bassIntensity" type="range" min="0" max="180" step="1" value="88">
+        <output id="bassIntensityReadout">88</output>
+      </label>
+      <label class="controlRow" for="midIntensity">
+        <span>Mid</span>
+        <input id="midIntensity" data-control="midIntensity" type="range" min="0" max="180" step="1" value="72">
+        <output id="midIntensityReadout">72</output>
+      </label>
+      <label class="controlRow" for="highIntensity">
+        <span>High</span>
+        <input id="highIntensity" data-control="highIntensity" type="range" min="0" max="180" step="1" value="64">
+        <output id="highIntensityReadout">64</output>
+      </label>
+      <label class="controlRow" for="bassSensitivity">
+        <span>Bass sense</span>
+        <input id="bassSensitivity" data-control="bassSensitivity" type="range" min="0" max="400" step="1" value="180">
+        <output id="bassSensitivityReadout">180</output>
+      </label>
+      <div class="levelRow" aria-label="Bass level monitor">
+        <span>Bass level</span>
+        <meter id="bassLevelMeter" min="0" max="1" value="0"></meter>
+        <output id="bassLevelReadout">0%</output>
+      </div>
+      <label class="controlRow" for="midSensitivity">
+        <span>Mid sense</span>
+        <input id="midSensitivity" data-control="midSensitivity" type="range" min="0" max="400" step="1" value="100">
+        <output id="midSensitivityReadout">100</output>
+      </label>
+      <div class="levelRow" aria-label="Mid level monitor">
+        <span>Mid level</span>
+        <meter id="midLevelMeter" min="0" max="1" value="0"></meter>
+        <output id="midLevelReadout">0%</output>
+      </div>
+      <label class="controlRow" for="highSensitivity">
+        <span>High sense</span>
+        <input id="highSensitivity" data-control="highSensitivity" type="range" min="0" max="400" step="1" value="100">
+        <output id="highSensitivityReadout">100</output>
+      </label>
+      <div class="levelRow" aria-label="High level monitor">
+        <span>High level</span>
+        <meter id="highLevelMeter" min="0" max="1" value="0"></meter>
+        <output id="highLevelReadout">0%</output>
+      </div>
+      <label class="controlRow hzRow" for="bassStartHz">
+        <span>Bass from</span>
+        <input id="bassStartHz" data-control="bassStartHz" type="range" min="20" max="1000" step="10" value="20">
+        <output id="bassStartHzReadout">20Hz</output>
+      </label>
+      <label class="controlRow hzRow" for="bassEndHz">
+        <span>Bass to</span>
+        <input id="bassEndHz" data-control="bassEndHz" type="range" min="40" max="2000" step="10" value="500">
+        <output id="bassEndHzReadout">500Hz</output>
+      </label>
+      <label class="controlRow hzRow" for="midStartHz">
+        <span>Mid from</span>
+        <input id="midStartHz" data-control="midStartHz" type="range" min="100" max="6000" step="10" value="500">
+        <output id="midStartHzReadout">500Hz</output>
+      </label>
+      <label class="controlRow hzRow" for="midEndHz">
+        <span>Mid to</span>
+        <input id="midEndHz" data-control="midEndHz" type="range" min="200" max="8000" step="10" value="3500">
+        <output id="midEndHzReadout">3500Hz</output>
+      </label>
+      <label class="controlRow hzRow" for="highStartHz">
+        <span>High from</span>
+        <input id="highStartHz" data-control="highStartHz" type="range" min="500" max="12000" step="10" value="3500">
+        <output id="highStartHzReadout">3500Hz</output>
+      </label>
+      <label class="controlRow hzRow" for="highEndHz">
+        <span>High to</span>
+        <input id="highEndHz" data-control="highEndHz" type="range" min="1000" max="20000" step="10" value="12000">
+        <output id="highEndHzReadout">12000Hz</output>
+      </label>
+      <label class="controlRow" for="waveBrightness">
+        <span>Wave bright</span>
+        <input id="waveBrightness" data-control="waveBrightness" type="range" min="0" max="300" step="1" value="135">
+        <output id="waveBrightnessReadout">135</output>
+      </label>
+      <label class="controlRow" for="waveContrast">
+        <span>Wave contrast</span>
+        <input id="waveContrast" data-control="waveContrast" type="range" min="0" max="300" step="1" value="145">
+        <output id="waveContrastReadout">145</output>
+      </label>
+      <label class="controlRow" for="waveHue">
+        <span>Wave hue</span>
+        <input id="waveHue" data-control="waveHue" type="range" min="0" max="100" step="1" value="52">
+        <output id="waveHueReadout">52</output>
+      </label>
+      <label class="controlRow" for="waveSaturation">
+        <span>Wave sat</span>
+        <input id="waveSaturation" data-control="waveSaturation" type="range" min="0" max="100" step="1" value="88">
+        <output id="waveSaturationReadout">88</output>
+      </label>
+      <label class="controlRow" for="waveSharpness">
+        <span>Wave sharp</span>
+        <input id="waveSharpness" data-control="waveSharpness" type="range" min="0" max="100" step="1" value="72">
+        <output id="waveSharpnessReadout">72</output>
+      </label>
+      <label class="controlRow" for="waveScale">
+        <span>Wave scale</span>
+        <input id="waveScale" data-control="waveScale" type="range" min="40" max="180" step="1" value="100">
+        <output id="waveScaleReadout">100</output>
+      </label>
+      <label class="controlRow" for="waveReactivity">
+        <span>Wave react</span>
+        <input id="waveReactivity" data-control="waveReactivity" type="range" min="0" max="250" step="1" value="100">
+        <output id="waveReactivityReadout">100</output>
+      </label>
+    </section>
+
+    <section class="controlGroup" aria-label="Compliment controls">
+      <div class="groupTitle">Compliments</div>
+      <label class="controlRow" for="complimentEnabled">
+        <span>Shower</span>
+        <input id="complimentEnabled" data-control="complimentEnabled" type="range" min="0" max="1" step="1" value="0">
+        <output id="complimentEnabledReadout">0</output>
+      </label>
+      <label class="controlRow" for="complimentRate">
+        <span>Rate</span>
+        <input id="complimentRate" data-control="complimentRate" type="range" min="20" max="250" step="1" value="100">
+        <output id="complimentRateReadout">100</output>
+      </label>
+      <label class="controlRow" for="complimentLockSeconds">
+        <span>Face lock</span>
+        <input id="complimentLockSeconds" data-control="complimentLockSeconds" type="range" min="0" max="30" step="1" value="3">
+        <output id="complimentLockSecondsReadout">3s</output>
+      </label>
+      <label class="controlRow" for="complimentCooldownSeconds">
+        <span>Cooldown</span>
+        <input id="complimentCooldownSeconds" data-control="complimentCooldownSeconds" type="range" min="2" max="180" step="1" value="15">
+        <output id="complimentCooldownSecondsReadout">15s</output>
+      </label>
+      <label class="controlRow" for="complimentSize">
+        <span>Size</span>
+        <input id="complimentSize" data-control="complimentSize" type="range" min="50" max="220" step="1" value="100">
+        <output id="complimentSizeReadout">100</output>
+      </label>
+      <label class="controlRow" for="complimentGlow">
+        <span>Glow</span>
+        <input id="complimentGlow" data-control="complimentGlow" type="range" min="0" max="250" step="1" value="100">
+        <output id="complimentGlowReadout">100</output>
+      </label>
+      <label class="controlRow" for="complimentReactivity">
+        <span>React</span>
+        <input id="complimentReactivity" data-control="complimentReactivity" type="range" min="0" max="250" step="1" value="100">
+        <output id="complimentReactivityReadout">100</output>
+      </label>
+      <label class="controlRow" for="complimentBrightness">
+        <span>Bright</span>
+        <input id="complimentBrightness" data-control="complimentBrightness" type="range" min="0" max="300" step="1" value="125">
+        <output id="complimentBrightnessReadout">125</output>
+      </label>
+      <label class="selectRow" for="complimentFont">
+        <span>Font</span>
+        <select id="complimentFont" data-control="complimentFont">
+          <option value="orbitron" selected>Orbitron</option>
+          <option value="audiowide">Audiowide</option>
+          <option value="monoton">Monoton</option>
+        </select>
+      </label>
+      <div class="buttonRow">
+        <button id="complimentNowBtn" type="button">Compliment Now</button>
+      </div>
+    </section>
+
+    <section class="controlGroup" aria-label="Performance controls">
+      <div class="groupTitle">Output</div>
+      <label class="selectRow" for="qualitySelect">
+        <span>Quality</span>
+        <select id="qualitySelect" data-control="quality">
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high" selected>High</option>
+          <option value="ultra">Ultra</option>
+        </select>
+      </label>
+      <div class="buttonRow">
+        <button id="projectionBtn" type="button">Projection</button>
+        <button id="resetBtn" type="button">Reset</button>
+      </div>
+    </section>
+
+    <section class="controlGroup" aria-label="Preset controls">
+      <div class="groupTitle">Presets</div>
+      <select id="presetSelect" aria-label="Saved presets">
+        <option value="">Presets</option>
+      </select>
+      <div class="presetRow">
+        <input id="presetName" type="text" maxlength="32" placeholder="Preset name" aria-label="Preset name">
+        <button id="savePresetBtn" type="button">Save</button>
+      </div>
+      <div class="buttonRow">
+        <button id="loadPresetBtn" type="button">Load</button>
+        <button id="deletePresetBtn" type="button">Delete</button>
+      </div>
+      <div class="buttonRow">
+        <button id="exportPresetBtn" type="button">Export</button>
+        <button id="importPresetBtn" type="button">Import</button>
+      </div>
+    </section>
+  </aside>
+
+  <button id="projectionExit" type="button" aria-label="Exit projection">Exit</button>
+
+  <div id="startOverlay">
+    <div id="startCard">
+      <h2>Galactica Kaleidoscope</h2>
+      <p>Enable camera and microphone to open the mandala.</p>
+      <button id="startBtn" type="button">Enable Camera + Mic</button>
+      <p id="errorText" role="alert"></p>
+    </div>
+  </div>
+
+  <script type="module" src="./app.js?v=20260627-compliments-final-v5"></script>
+</body>
+</html>

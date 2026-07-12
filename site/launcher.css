@@ -1,0 +1,325 @@
+:root {
+  --bg: #050505;
+  --panel: rgba(14, 13, 12, 0.82);
+  --panel-strong: rgba(22, 20, 18, 0.94);
+  --line: rgba(255, 238, 216, 0.15);
+  --line-hot: rgba(255, 146, 45, 0.45);
+  --text: #fff6ec;
+  --muted: rgba(255, 246, 236, 0.68);
+  --gold: #ffd36b;
+  --orange: #ff641c;
+  --red: #dd170b;
+  --cyan: #62e6ff;
+  --magenta: #ff5bd8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  background:
+    linear-gradient(180deg, rgba(255, 93, 18, 0.08), transparent 32%),
+    radial-gradient(circle at 50% 115%, rgba(255, 104, 24, 0.18), transparent 38%),
+    var(--bg);
+  color: var(--text);
+  font-family: "Segoe UI", "Trebuchet MS", Arial, sans-serif;
+}
+
+.shell {
+  width: min(1180px, calc(100% - 36px));
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 28px 0 32px;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 22px;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 18px;
+  padding: 4px 0 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: clamp(30px, 5vw, 62px);
+  line-height: 0.92;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.topbar p {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 16px;
+}
+
+.status {
+  flex: 0 0 auto;
+  border: 1px solid rgba(98, 230, 255, 0.32);
+  color: rgba(196, 246, 255, 0.92);
+  padding: 8px 11px;
+  border-radius: 8px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.portalGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  align-items: stretch;
+}
+
+.portalCard {
+  min-width: 0;
+  min-height: 620px;
+  display: grid;
+  grid-template-rows: minmax(280px, 1fr) auto;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: inherit;
+  text-decoration: none;
+  outline: none;
+  transition: transform 160ms ease, border-color 160ms ease, background-color 160ms ease;
+}
+
+.portalCard:hover,
+.portalCard:focus-visible {
+  transform: translateY(-3px);
+  border-color: var(--line-hot);
+  background: var(--panel-strong);
+}
+
+.portalCard:focus-visible {
+  box-shadow: 0 0 0 3px rgba(98, 230, 255, 0.26);
+}
+
+.portalThumb {
+  position: relative;
+  min-height: 360px;
+  overflow: hidden;
+  background: #000;
+  isolation: isolate;
+}
+
+.portalText {
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.portalNumber {
+  color: var(--gold);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+
+.portalText h2 {
+  font-size: clamp(22px, 3vw, 30px);
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.portalText p {
+  max-width: 36ch;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.launchText {
+  margin-top: 6px;
+  width: fit-content;
+  color: #fff9ed;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  border-bottom: 1px solid currentColor;
+}
+
+.fireFeed .portalThumb {
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 0 1px, transparent 1px 100%),
+    linear-gradient(180deg, transparent 0 24%, rgba(255, 26, 0, 0.2) 48%, rgba(255, 206, 72, 0.1) 100%),
+    #050101;
+  background-size: 24px 100%, 100% 100%, 100% 100%;
+}
+
+.scanline {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(180deg, transparent 0 13px, rgba(255, 255, 255, 0.08) 14px 15px);
+  opacity: 0.32;
+}
+
+.heatFigure {
+  position: absolute;
+  left: 50%;
+  top: 52%;
+  width: 38%;
+  height: 58%;
+  transform: translate(-50%, -50%);
+  border-radius: 42% 42% 26% 26%;
+  background:
+    radial-gradient(circle at 50% 18%, #fffddd 0 9%, #ffde00 10% 16%, transparent 17%),
+    radial-gradient(ellipse at 50% 66%, #ffde00 0 8%, #ff6c00 9% 23%, #ff1e00 24% 46%, transparent 47%);
+  filter: blur(1px) contrast(1.2);
+}
+
+.verticalWave {
+  position: absolute;
+  top: 12%;
+  right: 13%;
+  bottom: 12%;
+  width: 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 253, 221, 0.42);
+  background: repeating-linear-gradient(180deg, #fffddd 0 7px, #ff6c00 8px 18px, #2b0200 19px 30px);
+  opacity: 0.7;
+}
+
+.bodyFire .portalThumb {
+  background:
+    radial-gradient(ellipse at 50% 70%, rgba(255, 96, 18, 0.34), transparent 36%),
+    linear-gradient(180deg, #080403, #000);
+}
+
+.bodySilhouette {
+  position: absolute;
+  left: 50%;
+  top: 53%;
+  width: 46%;
+  height: 70%;
+  transform: translate(-50%, -50%);
+  background:
+    radial-gradient(circle at 50% 9%, #fff8ee 0 8%, transparent 9%),
+    linear-gradient(90deg, transparent 0 17%, #ff5a00 18% 26%, transparent 27% 72%, #ff5a00 73% 81%, transparent 82%),
+    radial-gradient(ellipse at 50% 58%, #fff1b8 0 9%, #ffd447 10% 18%, #ff6a00 19% 32%, #d91600 33% 48%, transparent 49%);
+  filter: drop-shadow(0 0 26px rgba(255, 94, 20, 0.58));
+}
+
+.fireRibs {
+  position: absolute;
+  inset: 11% 18%;
+  background: repeating-radial-gradient(ellipse at center, transparent 0 22px, rgba(255, 211, 107, 0.22) 23px 25px, transparent 26px 42px);
+  mix-blend-mode: screen;
+}
+
+.progressTower {
+  position: absolute;
+  top: 22px;
+  right: 20px;
+  bottom: 22px;
+  width: 24px;
+  border: 1px solid rgba(255, 211, 107, 0.28);
+  border-radius: 999px;
+  background: linear-gradient(0deg, #ff1800, #ff6a00 46%, #ffd447 72%, transparent 73%);
+}
+
+.galactica .portalThumb {
+  background:
+    radial-gradient(circle at center, rgba(98, 230, 255, 0.18), transparent 30%),
+    linear-gradient(180deg, #090521, #00020a);
+}
+
+.mandalaCore,
+.starRing,
+.signalRing {
+  position: absolute;
+  border-radius: 50%;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.mandalaCore {
+  width: 72%;
+  aspect-ratio: 1;
+  background:
+    radial-gradient(circle at center, #fff 0 2%, transparent 3%),
+    repeating-conic-gradient(from 14deg, rgba(98, 230, 255, 0.82) 0 10deg, rgba(255, 91, 216, 0.62) 10deg 20deg, rgba(255, 211, 107, 0.52) 20deg 30deg, rgba(60, 28, 190, 0.7) 30deg 40deg),
+    radial-gradient(circle at center, #11104a 0 20%, #050018 60%, #000 100%);
+  filter: saturate(1.2) contrast(1.08);
+}
+
+.starRing {
+  width: 88%;
+  aspect-ratio: 1;
+  border: 1px solid rgba(98, 230, 255, 0.28);
+  background: repeating-conic-gradient(from 0deg, transparent 0 7deg, rgba(255, 255, 255, 0.38) 8deg 9deg, transparent 10deg 16deg);
+  mix-blend-mode: color-dodge;
+  opacity: 0.62;
+}
+
+.signalRing {
+  width: 48%;
+  aspect-ratio: 1;
+  border: 2px solid rgba(255, 91, 216, 0.52);
+  box-shadow: 0 0 34px rgba(98, 230, 255, 0.42), inset 0 0 18px rgba(255, 211, 107, 0.24);
+}
+
+@media (max-width: 980px) {
+  body {
+    overflow: auto;
+  }
+
+  .shell {
+    width: min(720px, calc(100% - 24px));
+    min-height: auto;
+    padding: 22px 0;
+  }
+
+  .topbar {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .portalGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .portalCard {
+    min-height: 0;
+    grid-template-rows: 260px auto;
+  }
+
+  .portalThumb {
+    min-height: 260px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .portalCard {
+    transition: none;
+  }
+
+  .portalCard:hover,
+  .portalCard:focus-visible {
+    transform: none;
+  }
+}

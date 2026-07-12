@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fire Dancer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div id="video-container">
+            <video id="webcam" autoplay playsinline></video>
+            <canvas id="output-canvas"></canvas>
+        </div>
+        
+        <div class="controls">
+            <h2>Hey, Fire Dancer!</h2>
+            
+            <div class="control-group">
+                <h3>Global Audio Sensitivity</h3>
+                <div class="slider-control">
+                    <label for="bass-sensitivity">Bass (20-250 Hz): <span id="bass-sensitivity-value">50%</span></label>
+                    <input type="range" id="bass-sensitivity" min="0.1" max="2" step="0.05" value="0.5">
+                </div>
+                <div class="slider-control">
+                    <label for="lowmid-sensitivity">Low-Mid (250-500 Hz): <span id="lowmid-sensitivity-value">100%</span></label>
+                    <input type="range" id="lowmid-sensitivity" min="0.1" max="2" step="0.05" value="1">
+                </div>
+                <div class="slider-control">
+                    <label for="highmid-sensitivity">High-Mid (500-2000 Hz): <span id="highmid-sensitivity-value">100%</span></label>
+                    <input type="range" id="highmid-sensitivity" min="0.1" max="2" step="0.05" value="1">
+                </div>
+                <div class="slider-control">
+                    <label for="treble-sensitivity">Treble (2000-20000 Hz): <span id="treble-sensitivity-value">100%</span></label>
+                    <input type="range" id="treble-sensitivity" min="0.1" max="2" step="0.05" value="1">
+                </div>
+                <p class="control-hint">Adjust these sliders to make each frequency band more or less sensitive to sound input.</p>
+            </div>
+            <div class="control-group">
+                <label>
+                    <input type="checkbox" id="video-layer-toggle" checked>
+                    Flame Effect
+                </label>
+                
+                <div class="sub-controls">
+                    <h3>Flame Controls</h3>
+                    <div class="slider-control">
+                        <label for="flame-intensity">Effect Intensity: <span id="intensity-value">70%</span></label>
+                        <input type="range" id="flame-intensity" min="0" max="1" step="0.01" value="0.7">
+                    </div>
+                    
+                    <h3>Video Adjustments</h3>
+                    <div class="slider-control">
+                        <label for="brightness-control">Brightness: <span id="brightness-value">0</span></label>
+                        <input type="range" id="brightness-control" min="-100" max="100" step="1" value="0">
+                    </div>
+                    
+                    <div class="slider-control">
+                        <label for="contrast-control">Contrast: <span id="contrast-value">0</span></label>
+                        <input type="range" id="contrast-control" min="-100" max="100" step="1" value="0">
+                    </div>
+                    
+                    <h3>Trail Effect</h3>
+                    <div class="checkbox-control">
+                        <label>
+                            <input type="checkbox" id="trail-effect-toggle">
+                            Enable Trailing/Echo Effect
+                        </label>
+                    </div>
+                    
+                    <div id="trail-controls" class="sub-controls" style="display: none;">
+                        <div class="slider-control">
+                            <label for="trail-frames">Number of Frames: <span id="trail-frames-value">10</span></label>
+                            <input type="range" id="trail-frames" min="1" max="20" step="1" value="10">
+                        </div>
+                        
+                        <div class="slider-control">
+                            <label for="trail-opacity">Trail Opacity: <span id="trail-opacity-value">70%</span></label>
+                            <input type="range" id="trail-opacity" min="0.1" max="1" step="0.05" value="0.7">
+                        </div>
+                        
+                        <p class="control-hint">Move quickly to see the trail effect. Higher frame count = longer trail.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="control-group">
+                <label>
+                    <input type="checkbox" id="waveform-toggle">
+                    Wave Form
+                </label>
+                
+                <div id="waveform-controls" class="sub-controls" style="display: none;">
+                    <h3>Waveform Controls</h3>
+                    <div class="slider-control">
+                        <label for="waveform-width">Line Width: <span id="waveform-width-value">10</span></label>
+                        <input type="range" id="waveform-width" min="1" max="20" step="1" value="10">
+                    </div>
+                    
+                    <h3>Frequency Sensitivity</h3>
+                    <div class="slider-control">
+                        <label for="waveform-bass-sensitivity">Bass (20-250 Hz): <span id="waveform-bass-value">100%</span></label>
+                        <input type="range" id="waveform-bass-sensitivity" min="0.1" max="2" step="0.05" value="1">
+                    </div>
+                    <div class="slider-control">
+                        <label for="waveform-lowmid-sensitivity">Low-Mid (250-500 Hz): <span id="waveform-lowmid-value">100%</span></label>
+                        <input type="range" id="waveform-lowmid-sensitivity" min="0.1" max="2" step="0.05" value="1">
+                    </div>
+                    <div class="slider-control">
+                        <label for="waveform-highmid-sensitivity">High-Mid (500-2000 Hz): <span id="waveform-highmid-value">100%</span></label>
+                        <input type="range" id="waveform-highmid-sensitivity" min="0.1" max="2" step="0.05" value="1">
+                    </div>
+                    <div class="slider-control">
+                        <label for="waveform-treble-sensitivity">Treble (2000-20000 Hz): <span id="waveform-treble-value">100%</span></label>
+                        <input type="range" id="waveform-treble-sensitivity" min="0.1" max="2" step="0.05" value="1">
+                    </div>
+                    
+                    <h3>Appearance</h3>
+                    <div class="color-control">
+                        <label for="waveform-outline-color">Outline Color:</label>
+                        <input type="color" id="waveform-outline-color" value="#806400">
+                    </div>
+                    
+                    <div class="color-control">
+                        <label for="waveform-fill-color">Fill Color:</label>
+                        <input type="color" id="waveform-fill-color" value="#9e0000">
+                    </div>
+                    
+                    <div class="slider-control">
+                        <label for="waveform-fill-opacity">Fill Opacity: <span id="waveform-opacity-value">50%</span></label>
+                        <input type="range" id="waveform-fill-opacity" min="0" max="1" step="0.01" value="0.5">
+                    </div>
+                    
+                    <div class="select-control">
+                        <label for="waveform-blend-mode">Blend Mode:</label>
+                        <select id="waveform-blend-mode">
+                            <option value="normal">Normal</option>
+                            <option value="overlay">Overlay</option>
+                            <option value="soft-light">Soft Light</option>
+                            <option value="screen">Screen</option>
+                            <option value="lighten">Lighten</option>
+                            <option value="color-dodge" selected>Color Dodge</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="control-group">
+                <label>
+                    <input type="checkbox" id="particle-toggle">
+                    Particle Sparkles
+                </label>
+                
+                <div id="particle-controls" class="sub-controls" style="display: none;">
+                    <h3>Particle Controls</h3>
+                    <div class="slider-control">
+                        <label for="particle-size">Size: <span id="particle-size-value">5</span></label>
+                        <input type="range" id="particle-size" min="1" max="20" step="1" value="5">
+                    </div>
+                    
+                    <div class="slider-control">
+                        <label for="particle-aggressiveness">Aggressiveness: <span id="particle-aggressiveness-value">70%</span></label>
+                        <input type="range" id="particle-aggressiveness" min="0.1" max="10" step="0.1" value="0.7">
+                    </div>
+                    
+                    <div class="slider-control">
+                        <label for="particle-fade-rate">Fade Rate: <span id="particle-fade-rate-value">2%</span></label>
+                        <input type="range" id="particle-fade-rate" min="0.005" max="0.05" step="0.005" value="0.02">
+                    </div>
+                    
+                    <div class="slider-control">
+                        <label for="particle-velocity">Velocity: <span id="particle-velocity-value">2</span></label>
+                        <input type="range" id="particle-velocity" min="0.5" max="5" step="0.5" value="2">
+                    </div>
+                    
+                    <div class="slider-control">
+                        <label for="particle-max">Max Particles: <span id="particle-max-value">1000</span></label>
+                        <input type="range" id="particle-max" min="100" max="5000" step="100" value="1000">
+                    </div>
+                    
+                    <div class="select-control">
+                        <label for="particle-blend-mode">Blend Mode:</label>
+                        <select id="particle-blend-mode">
+                            <option value="normal">Normal</option>
+                            <option value="overlay">Overlay</option>
+                            <option value="soft-light">Soft Light</option>
+                            <option value="screen" selected>Screen</option>
+                            <option value="lighten">Lighten</option>
+                            <option value="color-dodge">Color Dodge</option>
+                            <option value="add">Add</option>
+                        </select>
+                    </div>
+
+                    <h3>Sensitivity Controls</h3>
+                    <div class="slider-control">
+                        <label for="spawn-threshold">Audio Threshold: <span id="spawn-threshold-value">0.050</span></label>
+                        <input type="range" id="spawn-threshold" min="0.01" max="0.2" step="0.005" value="0.05">
+                    </div>
+                    
+                    <h3>Brightness Thresholds</h3>
+                    <div class="slider-control">
+                        <label for="darkmid-threshold">Dark-Mid Threshold: <span id="darkmid-threshold-value">75%</span></label>
+                        <input type="range" id="darkmid-threshold" min="0.5" max="0.8" step="0.01" value="0.75">
+                    </div>
+                    <div class="slider-control">
+                        <label for="mid-threshold">Mid Threshold: <span id="mid-threshold-value">85%</span></label>
+                        <input type="range" id="mid-threshold" min="0.7" max="0.9" step="0.01" value="0.85">
+                    </div>
+                    <div class="slider-control">
+                        <label for="midbright-threshold">Mid-Bright Threshold: <span id="midbright-threshold-value">90%</span></label>
+                        <input type="range" id="midbright-threshold" min="0.8" max="0.95" step="0.01" value="0.9">
+                    </div>
+                    <div class="slider-control">
+                        <label for="brightest-threshold">Brightest Threshold: <span id="brightest-threshold-value">95%</span></label>
+                        <input type="range" id="brightest-threshold" min="0.9" max="1" step="0.01" value="0.95">
+                    </div>
+                    
+                    <h3>Appearance</h3>
+                    <div class="checkbox-control">
+                        <label>
+                            <input type="checkbox" id="particle-fill-toggle" checked>
+                            Show Fill
+                        </label>
+                        <label>
+                            <input type="checkbox" id="particle-outline-toggle" checked>
+                            Show Outline
+                        </label>
+                    </div>
+                    
+                    <div class="color-control">
+                        <label for="particle-outline-color">Outline Color:</label>
+                        <input type="color" id="particle-outline-color" value="#FFFFFF">
+                    </div>
+                </div>
+            </div>
+            <div class="control-group">
+                <label>
+                    <input type="checkbox" id="triangles-toggle">
+                    Triangles
+                </label>
+                
+                <div id="triangle-controls" class="sub-controls" style="display: none;">
+                    <h3>Triangle Controls</h3>
+                    <div class="slider-control">
+                        <label for="triangle-size">Size: <span id="triangle-size-value">50</span></label>
+                        <input type="range" id="triangle-size" min="20" max="1000" step="10" value="50">
+                    </div>
+                    
+                    <div class="slider-control">
+                        <label for="triangle-outline-width">Outline Width: <span id="triangle-outline-width-value">2</span>px</label>
+                        <input type="range" id="triangle-outline-width" min="1" max="40" step="1" value="2">
+                    </div>
+                    
+                    <div class="slider-control">
+                        <label for="triangle-expansion">Expansion Range: <span id="triangle-expansion-value">2</span>x</label>
+                        <input type="range" id="triangle-expansion" min="1" max="10" step="0.1" value="2">
+                    </div>
+                    
+                    <div class="slider-control">
+                        <label for="triangle-rotation">Rotation Speed: <span id="triangle-rotation-value">0</span>x</label>
+                        <input type="range" id="triangle-rotation" min="0" max="5" step="0.1" value="0">
+                    </div>
+                    
+                    <div class="slider-control">
+                        <label for="triangle-opacity">Opacity: <span id="triangle-opacity-value">80</span>%</label>
+                        <input type="range" id="triangle-opacity" min="0" max="1" step="0.01" value="0.8">
+                    </div>
+                    
+                    <div class="select-control">
+                        <label for="triangle-blend-mode">Blend Mode:</label>
+                        <select id="triangle-blend-mode">
+                            <option value="normal">Normal</option>
+                            <option value="overlay">Overlay</option>
+                            <option value="soft-light">Soft Light</option>
+                            <option value="screen">Screen</option>
+                            <option value="lighten">Lighten</option>
+                            <option value="color-dodge" selected>Color Dodge</option>
+                            <option value="add">Add</option>
+                        </select>
+                    </div>
+                    
+                    <h3>Triangle Colors</h3>
+                    
+                    <h4>Bass Triangle (Red)</h4>
+                    <div class="color-control">
+                        <label for="bass-triangle-color">Fill Color:</label>
+                        <input type="color" id="bass-triangle-color" value="#ff1e00">
+                    </div>
+                    <div class="color-control">
+                        <label for="bass-triangle-outline">Outline Color:</label>
+                        <input type="color" id="bass-triangle-outline" value="#FFFFFF">
+                    </div>
+                    
+                    <h4>Low-Mid Triangle (Orange)</h4>
+                    <div class="color-control">
+                        <label for="lowmid-triangle-color">Fill Color:</label>
+                        <input type="color" id="lowmid-triangle-color" value="#ff6c00">
+                    </div>
+                    <div class="color-control">
+                        <label for="lowmid-triangle-outline">Outline Color:</label>
+                        <input type="color" id="lowmid-triangle-outline" value="#FFFFFF">
+                    </div>
+                    
+                    <h4>High-Mid Triangle (Yellow)</h4>
+                    <div class="color-control">
+                        <label for="highmid-triangle-color">Fill Color:</label>
+                        <input type="color" id="highmid-triangle-color" value="#ffde00">
+                    </div>
+                    <div class="color-control">
+                        <label for="highmid-triangle-outline">Outline Color:</label>
+                        <input type="color" id="highmid-triangle-outline" value="#FFFFFF">
+                    </div>
+                    
+                    <h4>Treble Triangle (White-Yellow)</h4>
+                    <div class="color-control">
+                        <label for="treble-triangle-color">Fill Color:</label>
+                        <input type="color" id="treble-triangle-color" value="#fffddd">
+                    </div>
+                    <div class="color-control">
+                        <label for="treble-triangle-outline">Outline Color:</label>
+                        <input type="color" id="treble-triangle-outline" value="#FFFFFF">
+                    </div>
+                </div>
+            </div>
+            <div class="control-group">
+                <label>
+                    <input type="checkbox" id="mandala-toggle">
+                    Mandala
+                </label>
+                
+                <div id="mandala-controls" class="sub-controls" style="display: none;">
+                    <h3>Mandala Controls</h3>
+                    <div class="slider-control">
+                        <label for="mandala-complexity">Complexity: <span id="mandala-complexity-value">8</span></label>
+                        <input type="range" id="mandala-complexity" min="3" max="16" step="1" value="8">
+                    </div>
+                    
+                    <div class="slider-control">
+                        <label for="mandala-layers">Layers: <span id="mandala-layers-value">5</span></label>
+                        <input type="range" id="mandala-layers" min="1" max="10" step="1" value="5">
+                    </div>
+                    
+                    <div class="slider-control">
+                        <label for="mandala-size">Size: <span id="mandala-size-value">40</span>%</label>
+                        <input type="range" id="mandala-size" min="0.1" max="1" step="0.05" value="0.4">
+                    </div>
+                    
+                    <div class="slider-control">
+                        <label for="mandala-speed">Animation Speed: <span id="mandala-speed-value">0.01</span></label>
+                        <input type="range" id="mandala-speed" min="0.001" max="0.05" step="0.001" value="0.01">
+                    </div>
+                    
+                    <h3>Fractal Settings</h3>
+                    <div class="slider-control">
+                        <label for="mandala-depth">Fractal Depth: <span id="mandala-depth-value">3</span></label>
+                        <input type="range" id="mandala-depth" min="1" max="5" step="1" value="3">
+                    </div>
+                    
+                    <div class="slider-control">
+                        <label for="mandala-fractal-scale">Fractal Scale: <span id="mandala-fractal-scale-value">0.5</span></label>
+                        <input type="range" id="mandala-fractal-scale" min="0.1" max="0.9" step="0.05" value="0.5">
+                    </div>
+                    
+                    <div class="select-control">
+                        <label for="mandala-blend-mode">Blend Mode:</label>
+                        <select id="mandala-blend-mode">
+                            <option value="normal">Normal</option>
+                            <option value="overlay">Overlay</option>
+                            <option value="soft-light" selected>Soft Light</option>
+                            <option value="screen">Screen</option>
+                            <option value="lighten">Lighten</option>
+                            <option value="color-dodge">Color Dodge</option>
+                            <option value="add">Add</option>
+                        </select>
+                    </div>
+                    
+                    <h3>Audio Reactivity</h3>
+                    <div class="slider-control">
+                        <label for="mandala-bass-sensitivity">Bass (20-250 Hz): <span id="mandala-bass-value">100%</span></label>
+                        <input type="range" id="mandala-bass-sensitivity" min="0.1" max="2" step="0.05" value="1">
+                    </div>
+                    <div class="slider-control">
+                        <label for="mandala-lowmid-sensitivity">Low-Mid (250-500 Hz): <span id="mandala-lowmid-value">100%</span></label>
+                        <input type="range" id="mandala-lowmid-sensitivity" min="0.1" max="2" step="0.05" value="1">
+                    </div>
+                    <div class="slider-control">
+                        <label for="mandala-highmid-sensitivity">High-Mid (500-2000 Hz): <span id="mandala-highmid-value">100%</span></label>
+                        <input type="range" id="mandala-highmid-sensitivity" min="0.1" max="2" step="0.05" value="1">
+                    </div>
+                    <div class="slider-control">
+                        <label for="mandala-treble-sensitivity">Treble (2000-20000 Hz): <span id="mandala-treble-value">100%</span></label>
+                        <input type="range" id="mandala-treble-sensitivity" min="0.1" max="2" step="0.05" value="1">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label>
+                    <input type="checkbox" id="surprise-toggle">
+                    Surprise Animation
+                </label>
+                
+                <div id="surprise-controls" class="sub-controls" style="display: none;">
+                    <h3>Surprise Controls</h3>
+                    
+                    <div class="image-control-group">
+                        <h4>Image 1 Settings</h4>
+                        <div class="file-control">
+                            <label for="surprise1-image-upload">Upload Image 1:</label>
+                            <input type="file" id="surprise1-image-upload" accept="image/png">
+                            <p class="control-hint">Default: surprise.png</p>
+                        </div>
+                        
+                        <div class="slider-control">
+                            <label for="surprise1-duration">Duration: <span id="surprise1-duration-value">2</span>s</label>
+                            <input type="range" id="surprise1-duration" min="1" max="10" step="0.5" value="2">
+                        </div>
+                        
+                        <div class="slider-control">
+                            <label for="surprise1-cooldown">Cooldown: <span id="surprise1-cooldown-value">1000</span>s</label>
+                            <input type="range" id="surprise1-cooldown" min="0" max="1000" step="10" value="1000">
+                        </div>
+                    </div>
+
+                    <div class="image-control-group">
+                        <h4>Image 2 Settings</h4>
+                        <div class="file-control">
+                            <label for="surprise2-image-upload">Upload Image 2:</label>
+                            <input type="file" id="surprise2-image-upload" accept="image/png">
+                            <p class="control-hint">Default: surprise2.png</p>
+                        </div>
+                        
+                        <div class="slider-control">
+                            <label for="surprise2-duration">Duration: <span id="surprise2-duration-value">2</span>s</label>
+                            <input type="range" id="surprise2-duration" min="1" max="10" step="0.5" value="2">
+                        </div>
+                        
+                        <div class="slider-control">
+                            <label for="surprise2-cooldown">Cooldown: <span id="surprise2-cooldown-value">1000</span>s</label>
+                            <input type="range" id="surprise2-cooldown" min="0" max="1000" step="10" value="1000">
+                        </div>
+                    </div>
+                    
+                    <div class="slider-control">
+                        <label for="surprise-start-size">Starting Size: <span id="surprise-start-size-value">0</span></label>
+                        <input type="range" id="surprise-start-size" min="0" max="0.5" step="0.01" value="0">
+                    </div>
+                    
+                    <div class="slider-control">
+                        <label for="surprise-expansion">Expansion Factor: <span id="surprise-expansion-value">1.5</span>x</label>
+                        <input type="range" id="surprise-expansion" min="0.5" max="10" step="0.1" value="1.5">
+                    </div>
+                    
+                    <button id="surprise-btn">Trigger Surprise Animation</button>
+                    <p class="control-hint">Animation cycles through 7 colors (red, orange, yellow, green, turquoise, blue, purple)</p>
+                </div>
+            </div>
+            <div class="control-group">
+                <button id="fullscreen-btn">Toggle Fullscreen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main app script -->
+    <script src="js/app.js"></script>
+    
+    <!-- Layer scripts -->
+    <script src="js/videoLayer.js"></script>
+    <script src="js/waveformLayer.js"></script>
+    <script src="js/particleLayer.js"></script>
+    <script src="js/trianglesLayer.js"></script>
+    <script src="js/surpriseLayer.js"></script>
+    <script src="js/mandalaLayer.js"></script>
+    
+    <!-- Audio processing -->
+    <script src="js/audioProcessor.js"></script>
+</body>
+</html>

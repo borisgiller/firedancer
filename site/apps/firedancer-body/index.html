@@ -1,0 +1,4194 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fire Dancer 3</title>
+  <style>
+    :root {
+      --bg: #000;
+      --panel: rgba(14, 10, 8, 0.78);
+      --line: rgba(255, 190, 120, 0.2);
+      --text: #fff5eb;
+      --muted: rgba(255, 245, 235, 0.72);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+      color: var(--text);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    }
+
+    #stage {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: #000;
+    }
+
+    #video {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      width: 132px;
+      border-radius: 12px;
+      transform: scaleX(-1);
+      opacity: 0.15;
+      border: 1px solid var(--line);
+      background: #000;
+    }
+
+    #hud {
+      position: fixed;
+      top: 14px;
+      left: 14px;
+      max-width: min(360px, calc(100vw - 28px));
+      max-height: calc(100vh - 28px);
+      overflow-y: auto;
+      overflow-x: hidden;
+      overscroll-behavior: contain;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      backdrop-filter: blur(10px);
+    }
+
+    body.projection-mode #hud,
+    body.projection-mode #video {
+      display: none !important;
+    }
+
+    #bootyTower {
+      position: fixed;
+      top: 18px;
+      right: 16px;
+      bottom: 18px;
+      width: 34px;
+      z-index: 12;
+      display: grid;
+      grid-template-rows: 1fr auto;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    #bootyTrack {
+      position: relative;
+      overflow: hidden;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 190, 120, 0.24);
+      background: linear-gradient(180deg, rgba(255, 245, 235, 0.07), rgba(255, 82, 14, 0.07));
+      box-shadow: 0 0 22px rgba(255, 83, 12, 0.16);
+    }
+
+    #bootyFill {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 0%;
+      border-radius: inherit;
+      background: linear-gradient(0deg, #ff1800, #ff6a00 48%, #ffd447 82%, #fff1b8);
+      box-shadow: 0 0 16px rgba(255, 124, 18, 0.5);
+      transition: height 120ms ease-out;
+    }
+
+    #bootyGoalMarker {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: start center;
+      padding-top: 8px;
+      color: rgba(255, 245, 235, 0.9);
+      font-size: 9px;
+      letter-spacing: 0.08em;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      text-transform: uppercase;
+    }
+
+    #bootyCount {
+      min-height: 24px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 190, 120, 0.18);
+      background: rgba(0, 0, 0, 0.36);
+      color: #fff1b8;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1;
+      text-shadow: 0 0 8px rgba(255, 95, 0, 0.78);
+    }
+
+    #bootyTower.winning #bootyTrack {
+      box-shadow: 0 0 28px rgba(255, 210, 80, 0.72);
+    }
+
+    #hud h1 {
+      margin: 0 0 6px;
+      font-size: 16px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    #hud p {
+      margin: 5px 0;
+      font-size: 13px;
+      line-height: 1.45;
+      color: var(--muted);
+    }
+
+    #controls {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    #presetBar {
+      display: grid;
+      grid-template-columns: 1fr auto auto auto;
+      gap: 8px;
+      margin-top: 12px;
+      align-items: center;
+    }
+
+    #presetSelect,
+    #presetName {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      padding: 7px 11px;
+      font: inherit;
+    }
+
+    #presetNameRow {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    #presetHint {
+      margin-top: 6px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    #layerPanel {
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255, 190, 120, 0.16);
+      display: grid;
+      gap: 8px;
+    }
+
+    #sparkPanel {
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255, 190, 120, 0.16);
+      display: grid;
+      gap: 8px;
+    }
+
+    #effectsPanel {
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255, 190, 120, 0.16);
+      display: grid;
+      gap: 8px;
+    }
+
+    #bootyPanel {
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255, 190, 120, 0.16);
+      display: grid;
+      gap: 8px;
+    }
+
+    .switchRow {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .switchRow input {
+      width: 18px;
+      height: 18px;
+      accent-color: #ff9b3d;
+    }
+
+    #bodyPanel {
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255, 190, 120, 0.16);
+      display: grid;
+      gap: 8px;
+    }
+
+    #bandPanel {
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255, 190, 120, 0.16);
+      display: grid;
+      gap: 8px;
+    }
+
+    .layerRow {
+      display: grid;
+      gap: 6px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .layerTop {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .layerName {
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text);
+      flex: 0 0 auto;
+    }
+
+    .layerValue {
+      font-size: 11px;
+      color: var(--muted);
+      min-width: 0;
+      overflow-wrap: anywhere;
+      text-align: right;
+    }
+
+    #bandEditor {
+      width: 100%;
+      height: 96px;
+      display: block;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 190, 120, 0.16);
+      background: rgba(255, 255, 255, 0.025);
+      touch-action: none;
+    }
+
+    .bandGrid {
+      display: grid;
+      gap: 8px;
+    }
+
+    .bandMeter {
+      position: relative;
+      height: 12px;
+      overflow: hidden;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 190, 120, 0.14);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .bandMeterFill {
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 0%;
+      border-radius: 999px;
+      opacity: 0.95;
+      transition: width 70ms linear;
+    }
+
+    .bandMeterLabel {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      font-size: 10px;
+      letter-spacing: 0.05em;
+      color: rgba(255, 245, 235, 0.88);
+      text-transform: uppercase;
+      pointer-events: none;
+    }
+
+    .sliderGrid {
+      display: grid;
+      grid-template-columns: minmax(64px, auto) minmax(0, 1fr);
+      gap: 6px 10px;
+      align-items: center;
+    }
+
+    .sliderGrid label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: #ff9b3d;
+    }
+
+    button {
+      appearance: none;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      padding: 7px 11px;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    #overlay {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: rgba(0, 0, 0, 0.94);
+    }
+
+    #card {
+      width: min(540px, 100%);
+      padding: 24px;
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      background: rgba(20, 10, 7, 0.95);
+      text-align: center;
+    }
+
+    #card h2 {
+      margin: 0 0 10px;
+      font-size: clamp(24px, 4vw, 38px);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    #card p {
+      margin: 8px 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    #fsExit {
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      width: 34px;
+      height: 34px;
+      padding: 0;
+      display: none;
+      place-items: center;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 240, 220, 0.24);
+      background: rgba(0, 0, 0, 0.22);
+      color: #fff8ef;
+      font-size: 20px;
+      line-height: 1;
+      z-index: 20;
+      backdrop-filter: blur(4px);
+    }
+
+    body.projection-mode #fsExit {
+      display: grid;
+    }
+
+    #galleryOverlay {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      padding: 18px;
+      background: rgba(0, 0, 0, 0.84);
+      backdrop-filter: blur(8px);
+      overflow: auto;
+    }
+
+    #galleryPanel {
+      width: min(980px, 100%);
+      margin: 0 auto;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(14, 10, 8, 0.96);
+      padding: 14px;
+    }
+
+    #galleryTop {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    #galleryTop h2 {
+      margin: 0;
+      font-size: 16px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    #galleryCloseBtn {
+      width: 34px;
+      height: 34px;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+    }
+
+    #galleryStatus {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
+
+    #galleryGrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+      gap: 10px;
+    }
+
+    .galleryItem {
+      min-width: 0;
+      padding: 0;
+      border-radius: 10px;
+      overflow: hidden;
+      text-align: left;
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .galleryItem img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      background: #000;
+    }
+
+    .galleryMeta {
+      display: grid;
+      gap: 2px;
+      padding: 7px 8px;
+      font-size: 11px;
+      color: var(--muted);
+      overflow-wrap: anywhere;
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <canvas id="stage"></canvas>
+  <video id="video" autoplay playsinline muted></video>
+  <div id="bootyTower" aria-label="Booty shake progress">
+    <div id="bootyTrack">
+      <div id="bootyFill"></div>
+      <div id="bootyGoalMarker">Goal</div>
+    </div>
+    <div id="bootyCount">0</div>
+  </div>
+
+  <div id="hud">
+    <h1>Fire Dancer 3</h1>
+    <p id="status">Waiting to start.</p>
+    <p id="stats">FPS -- • inference -- ms • pose --</p>
+    <p id="audioReadout">Bass -- • MidLow -- • MidHigh -- • High --</p>
+    <p id="centerReadout">Center x -- • y -- • scale --</p>
+    <p id="hudError">Error --</p>
+    <div id="controls">
+      <button id="fullscreenBtn" type="button">Fullscreen</button>
+      <button id="togglePreviewBtn" type="button">Hide Preview</button>
+      <button id="resetLayersBtn" type="button">Reset Layers</button>
+      <button id="resetMotionBtn" type="button">Reset Motion</button>
+      <button id="resetAudioBtn" type="button">Reset Audio</button>
+      <button id="clearGhostsBtn" type="button">Clear Ghosts</button>
+      <button id="resumeQualityBtn" type="button">Resume Quality</button>
+      <button id="galleryBtn" type="button">Gallery</button>
+    </div>
+    <div id="bootyPanel">
+      <div class="layerRow">
+        <div class="layerTop">
+          <span class="layerName">Dance Counter</span>
+          <span class="layerValue" id="bootyCounterReadout">0 / 69</span>
+        </div>
+        <label class="switchRow" for="bootyEnabled">
+          <span>Enabled</span>
+          <input id="bootyEnabled" type="checkbox" checked>
+        </label>
+        <div class="sliderGrid">
+          <label for="bootyStrictness">Strict</label>
+          <input id="bootyStrictness" type="range" min="50" max="200" step="1" value="100">
+          <label for="bootyResetMs">Reset</label>
+          <input id="bootyResetMs" type="range" min="400" max="3000" step="100" value="1000">
+          <label for="bootyGoal">Goal</label>
+          <input id="bootyGoal" type="range" min="5" max="150" step="1" value="69">
+          <label for="winCapturePreWinCount">Pre-win shots</label>
+          <input id="winCapturePreWinCount" type="range" min="0" max="5" step="1" value="3">
+        </div>
+        <label class="switchRow" for="bootyShowStatus">
+          <span>Status copy</span>
+          <input id="bootyShowStatus" type="checkbox">
+        </label>
+        <label class="switchRow" for="bootyShowDebug">
+          <span>Debug readout</span>
+          <input id="bootyShowDebug" type="checkbox" checked>
+        </label>
+        <label class="switchRow" for="winCaptureEnabled">
+          <span>Freeze win photo</span>
+          <input id="winCaptureEnabled" type="checkbox" checked>
+        </label>
+        <label class="switchRow" for="winCaptureUploadEnabled">
+          <span>Save win photos</span>
+          <input id="winCaptureUploadEnabled" type="checkbox" checked>
+        </label>
+        <button id="previewWinBtn" type="button">Preview Win</button>
+      </div>
+    </div>
+    <div id="presetBar">
+      <select id="presetSelect">
+        <option value="">Presets</option>
+      </select>
+      <button id="loadPresetBtn" type="button">Load</button>
+      <button id="savePresetBtn" type="button">Save</button>
+      <button id="deletePresetBtn" type="button">Delete</button>
+    </div>
+    <div id="presetNameRow">
+      <input id="presetName" type="text" maxlength="32" placeholder="Preset name">
+      <button id="saveAsPresetBtn" type="button">Save As</button>
+    </div>
+    <div id="presetNameRow">
+      <button id="exportPresetsBtn" type="button">Export Presets</button>
+      <button id="importPresetsBtn" type="button">Import Presets</button>
+    </div>
+    <div id="presetHint">Presets are saved in this browser on this device.</div>
+    <div id="bodyPanel">
+      <div class="layerRow">
+        <div class="layerTop">
+          <span class="layerName">Body</span>
+          <span class="layerValue" id="bodyReadout">Booty 100%</span>
+        </div>
+        <div class="sliderGrid">
+          <label for="bootySize">Booty</label>
+          <input id="bootySize" data-body-key="booty" type="range" min="60" max="320" step="1" value="100">
+          <label for="bottomWidth">Bottom</label>
+          <input id="bottomWidth" data-body-key="bottomWidth" type="range" min="80" max="240" step="1" value="100">
+          <label for="fluidity">Fluidity</label>
+          <input id="fluidity" data-body-key="fluidity" type="range" min="40" max="240" step="1" value="100">
+          <label for="motionSensitivity">Motion</label>
+          <input id="motionSensitivity" data-body-key="motionSensitivity" type="range" min="40" max="220" step="1" value="100">
+          <label for="rippleSize">Ripple</label>
+          <input id="rippleSize" data-body-key="rippleSize" type="range" min="50" max="240" step="1" value="100">
+        </div>
+      </div>
+    </div>
+    <div id="bandPanel">
+      <div class="layerRow">
+        <div class="layerTop">
+          <span class="layerName">Sound Bands</span>
+          <span class="layerValue" id="bandReadout">120 Hz • 420 Hz • 2200 Hz</span>
+        </div>
+        <canvas id="bandEditor" width="320" height="96"></canvas>
+        <div class="bandGrid">
+          <div class="layerRow">
+            <div class="layerTop">
+              <span class="layerName">Bass</span>
+              <span class="layerValue" id="bassBandReadout">Intensity 100% • Reactivity 100%</span>
+            </div>
+            <div class="bandMeter">
+              <div class="bandMeterFill" id="bassBandMeter" style="background: linear-gradient(90deg, rgba(255,43,28,0.55), rgba(255,90,60,0.95));"></div>
+              <div class="bandMeterLabel">Live Level</div>
+            </div>
+            <div class="sliderGrid">
+              <label for="bassIntensity">Intensity</label>
+              <input id="bassIntensity" data-band="bass" data-band-key="intensity" type="range" min="0" max="250" step="1" value="100">
+              <label for="bassReactivity">Reactivity</label>
+              <input id="bassReactivity" data-band="bass" data-band-key="reactivity" type="range" min="0" max="300" step="1" value="100">
+            </div>
+          </div>
+          <div class="layerRow">
+            <div class="layerTop">
+              <span class="layerName">MidLow</span>
+              <span class="layerValue" id="midlowBandReadout">Intensity 100% • Reactivity 100%</span>
+            </div>
+            <div class="bandMeter">
+              <div class="bandMeterFill" id="midlowBandMeter" style="background: linear-gradient(90deg, rgba(255,138,28,0.55), rgba(255,176,68,0.95));"></div>
+              <div class="bandMeterLabel">Live Level</div>
+            </div>
+            <div class="sliderGrid">
+              <label for="midlowIntensity">Intensity</label>
+              <input id="midlowIntensity" data-band="midlow" data-band-key="intensity" type="range" min="0" max="250" step="1" value="100">
+              <label for="midlowReactivity">Reactivity</label>
+              <input id="midlowReactivity" data-band="midlow" data-band-key="reactivity" type="range" min="0" max="300" step="1" value="100">
+            </div>
+          </div>
+          <div class="layerRow">
+            <div class="layerTop">
+              <span class="layerName">MidHigh</span>
+              <span class="layerValue" id="midhighBandReadout">Intensity 100% • Reactivity 100%</span>
+            </div>
+            <div class="bandMeter">
+              <div class="bandMeterFill" id="midhighBandMeter" style="background: linear-gradient(90deg, rgba(255,211,74,0.5), rgba(255,229,120,0.95));"></div>
+              <div class="bandMeterLabel">Live Level</div>
+            </div>
+            <div class="sliderGrid">
+              <label for="midhighIntensity">Intensity</label>
+              <input id="midhighIntensity" data-band="midhigh" data-band-key="intensity" type="range" min="0" max="250" step="1" value="100">
+              <label for="midhighReactivity">Reactivity</label>
+              <input id="midhighReactivity" data-band="midhigh" data-band-key="reactivity" type="range" min="0" max="300" step="1" value="100">
+            </div>
+          </div>
+          <div class="layerRow">
+            <div class="layerTop">
+              <span class="layerName">High</span>
+              <span class="layerValue" id="highBandReadout">Intensity 100% • Reactivity 100%</span>
+            </div>
+            <div class="bandMeter">
+              <div class="bandMeterFill" id="highBandMeter" style="background: linear-gradient(90deg, rgba(255,248,240,0.45), rgba(255,255,255,0.95));"></div>
+              <div class="bandMeterLabel">Live Level</div>
+            </div>
+            <div class="sliderGrid">
+              <label for="highIntensity">Intensity</label>
+              <input id="highIntensity" data-band="high" data-band-key="intensity" type="range" min="0" max="250" step="1" value="100">
+              <label for="highReactivity">Reactivity</label>
+              <input id="highReactivity" data-band="high" data-band-key="reactivity" type="range" min="0" max="300" step="1" value="100">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="layerPanel">
+      <div class="layerRow">
+        <div class="layerTop">
+          <span class="layerName">Blur</span>
+          <span class="layerValue" id="blurReadout">Radius 100%</span>
+        </div>
+        <div class="sliderGrid">
+          <label for="blurRadius">Radius</label>
+          <input id="blurRadius" type="range" min="0" max="500" step="1" value="100">
+        </div>
+      </div>
+      <div class="layerRow">
+        <div class="layerTop">
+          <span class="layerName">Red</span>
+          <span class="layerValue" id="redReadout">Size 100% • Intensity 100%</span>
+        </div>
+        <div class="sliderGrid">
+          <label for="redSize">Size</label>
+          <input id="redSize" data-layer="red" data-key="size" type="range" min="70" max="160" step="1" value="100">
+          <label for="redIntensity">Intensity</label>
+          <input id="redIntensity" data-layer="red" data-key="intensity" type="range" min="0" max="180" step="1" value="100">
+        </div>
+      </div>
+      <div class="layerRow">
+        <div class="layerTop">
+          <span class="layerName">Orange</span>
+          <span class="layerValue" id="orangeReadout">Size 100% • Intensity 100%</span>
+        </div>
+        <div class="sliderGrid">
+          <label for="orangeSize">Size</label>
+          <input id="orangeSize" data-layer="orange" data-key="size" type="range" min="70" max="160" step="1" value="100">
+          <label for="orangeIntensity">Intensity</label>
+          <input id="orangeIntensity" data-layer="orange" data-key="intensity" type="range" min="0" max="180" step="1" value="100">
+        </div>
+      </div>
+      <div class="layerRow">
+        <div class="layerTop">
+          <span class="layerName">Yellow</span>
+          <span class="layerValue" id="yellowReadout">Size 100% • Intensity 100%</span>
+        </div>
+        <div class="sliderGrid">
+          <label for="yellowSize">Size</label>
+          <input id="yellowSize" data-layer="yellow" data-key="size" type="range" min="60" max="150" step="1" value="100">
+          <label for="yellowIntensity">Intensity</label>
+          <input id="yellowIntensity" data-layer="yellow" data-key="intensity" type="range" min="0" max="180" step="1" value="100">
+        </div>
+      </div>
+      <div class="layerRow">
+        <div class="layerTop">
+          <span class="layerName">White</span>
+          <span class="layerValue" id="whiteReadout">Size 100% • Intensity 100%</span>
+        </div>
+        <div class="sliderGrid">
+          <label for="whiteSize">Size</label>
+          <input id="whiteSize" data-layer="white" data-key="size" type="range" min="40" max="130" step="1" value="100">
+          <label for="whiteIntensity">Intensity</label>
+          <input id="whiteIntensity" data-layer="white" data-key="intensity" type="range" min="0" max="180" step="1" value="100">
+        </div>
+      </div>
+    </div>
+    <div id="sparkPanel">
+      <div class="layerRow">
+        <div class="layerTop">
+          <span class="layerName">Sparkles</span>
+          <span class="layerValue" id="sparkReadout">Speed 100% • Travel 100% • Size 100% • Density 100%</span>
+        </div>
+        <div class="sliderGrid">
+          <label for="sparkSpeed">Speed</label>
+          <input id="sparkSpeed" data-spark-key="speed" type="range" min="50" max="250" step="1" value="100">
+          <label for="sparkTravel">Travel</label>
+          <input id="sparkTravel" data-spark-key="travel" type="range" min="50" max="260" step="1" value="100">
+          <label for="sparkSize">Size</label>
+          <input id="sparkSize" data-spark-key="size" type="range" min="50" max="220" step="1" value="100">
+          <label for="sparkDensity">Density</label>
+          <input id="sparkDensity" data-spark-key="density" type="range" min="40" max="240" step="1" value="100">
+        </div>
+      </div>
+    </div>
+    <div id="effectsPanel">
+      <div class="layerRow">
+        <div class="layerTop">
+          <span class="layerName">Effects</span>
+          <span class="layerValue" id="effectsReadout">Ghosts 100% • Tongues 100% • Edge 100%</span>
+        </div>
+        <div class="sliderGrid">
+          <label for="ghostsFx">Ghosts</label>
+          <input id="ghostsFx" data-effects-key="ghosts" type="range" min="0" max="200" step="1" value="100">
+          <label for="tonguesFx">Tongues</label>
+          <input id="tonguesFx" data-effects-key="tongues" type="range" min="0" max="200" step="1" value="100">
+          <label for="edgeFx">Edge</label>
+          <input id="edgeFx" data-effects-key="edgeTurbulence" type="range" min="0" max="220" step="1" value="100">
+        </div>
+        <div class="layerTop">
+          <span class="layerName">Lag Test</span>
+          <span class="layerValue" id="perfReadout">All visual passes on</span>
+        </div>
+        <label class="switchRow" for="perfBackdrop">
+          <span>Camera backdrop</span>
+          <input id="perfBackdrop" data-perf-key="backdrop" type="checkbox">
+        </label>
+        <div class="sliderGrid">
+          <label for="videoDarkness">Video darkness</label>
+          <input id="videoDarkness" type="range" min="0" max="100" step="1" value="70">
+        </div>
+        <div class="layerValue" id="videoDarknessReadout">Video darkness 70%</div>
+        <div class="layerTop">
+          <span class="layerName">Merkaba</span>
+          <span class="layerValue" id="merkabaReadout">On • Opacity 45% • Scale 110% • Speed 70% • Layers 3</span>
+        </div>
+        <label class="switchRow" for="merkabaEnabled">
+          <span>Merkaba overlay</span>
+          <input id="merkabaEnabled" type="checkbox">
+        </label>
+        <div class="sliderGrid">
+          <label for="merkabaOpacity">Opacity</label>
+          <input id="merkabaOpacity" data-merkaba-key="opacity" type="range" min="0" max="100" step="1" value="45">
+          <label for="merkabaScale">Scale</label>
+          <input id="merkabaScale" data-merkaba-key="scale" type="range" min="50" max="180" step="1" value="110">
+          <label for="merkabaSpeed">Speed</label>
+          <input id="merkabaSpeed" data-merkaba-key="speed" type="range" min="0" max="200" step="1" value="70">
+          <label for="merkabaDensity">Layers</label>
+          <input id="merkabaDensity" data-merkaba-key="density" type="range" min="1" max="5" step="1" value="3">
+        </div>
+        <label class="switchRow" for="perfWhiteCore">
+          <span>White core layer</span>
+          <input id="perfWhiteCore" data-perf-key="whiteCore" type="checkbox" checked>
+        </label>
+        <label class="switchRow" for="perfEdgeBoost">
+          <span>Extra edge shimmer</span>
+          <input id="perfEdgeBoost" data-perf-key="edgeBoost" type="checkbox" checked>
+        </label>
+        <label class="switchRow" for="perfGlowHeat">
+          <span>Glow heat shimmer</span>
+          <input id="perfGlowHeat" data-perf-key="glowHeat" type="checkbox" checked>
+        </label>
+        <label class="switchRow" for="perfGhosts">
+          <span>Ghost trails</span>
+          <input id="perfGhosts" data-perf-key="ghostTrails" type="checkbox" checked>
+        </label>
+        <label class="switchRow" for="perfHotCores">
+          <span>Audio hot cores</span>
+          <input id="perfHotCores" data-perf-key="hotCores" type="checkbox" checked>
+        </label>
+        <label class="switchRow" for="perfVelocityLicks">
+          <span>Velocity licks</span>
+          <input id="perfVelocityLicks" data-perf-key="velocityLicks" type="checkbox" checked>
+        </label>
+        <label class="switchRow" for="perfFlameTongues">
+          <span>Flame tongues</span>
+          <input id="perfFlameTongues" data-perf-key="flameTongues" type="checkbox" checked>
+        </label>
+        <label class="switchRow" for="perfParticles">
+          <span>Particles</span>
+          <input id="perfParticles" data-perf-key="particles" type="checkbox" checked>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <button id="fsExit" type="button" aria-label="Exit fullscreen">&times;</button>
+
+  <div id="galleryOverlay" class="hidden" aria-live="polite">
+    <div id="galleryPanel">
+      <div id="galleryTop">
+        <h2>Saved Photos</h2>
+        <button id="galleryCloseBtn" type="button" aria-label="Close gallery">&times;</button>
+      </div>
+      <div id="galleryStatus">Loading...</div>
+      <div id="galleryGrid"></div>
+    </div>
+  </div>
+
+  <div id="overlay">
+    <div id="card">
+      <h2>Fire Dancer 3</h2>
+      <p>A live flame body driven by pose tracking.</p>
+      <p>Enable the camera to turn movement into a flame body.</p>
+      <button id="startBtn" type="button">Enable Camera</button>
+      <p id="errorText"></p>
+    </div>
+  </div>
+
+  <script type="module">
+    const BUNDLE_URL = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/vision_bundle.mjs";
+    const MODEL_URL = "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task";
+    const WASM_URL = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm";
+
+    function createBootyCounterConfig(overrides = {}) {
+      return {
+        enabled: true,
+        goal: 69,
+        resetAfterIdleMs: 1000,
+        showStatusCopy: false,
+        showDebugPanel: true,
+        strictness: 1,
+        minPoseConfidence: 0.08,
+        minShakeDistance: 0.012,
+        minMsBetweenPoints: 180,
+        maxCycleMs: 900,
+        smoothing: 0.35,
+        winningImageUrl: "assets/winning-outline.png",
+        winningImageUrls: ["surprise.png", "surprise2.png"],
+        winningText: "You win! Nice butt",
+        winCaptureEnabled: true,
+        winCaptureUploadEnabled: true,
+        winCaptureUploadEndpoint: "/api/win-captures",
+        winCapturePreWinCount: 3,
+        ...overrides
+      };
+    }
+
+    function extractPelvisShakeSample(landmarks) {
+      const left = landmarks?.[23];
+      const right = landmarks?.[24];
+      const leftOk = isUsableHip(left);
+      const rightOk = isUsableHip(right);
+      if (!leftOk && !rightOk) return { y: 0, ok: false, confidence: 0 };
+      if (leftOk && rightOk) {
+        return {
+          y: (left.y + right.y) * 0.5,
+          ok: true,
+          confidence: Math.max(left.visibility ?? 1, right.visibility ?? 1)
+        };
+      }
+      const hip = leftOk ? left : right;
+      return { y: hip.y, ok: true, confidence: hip.visibility ?? 1 };
+    }
+
+    function isUsableHip(point) {
+      return Boolean(
+        point &&
+        Number.isFinite(point.y) &&
+        point.y >= -0.2 &&
+        point.y <= 1.2 &&
+        (point.visibility ?? 1) >= 0.05
+      );
+    }
+
+    class BootyShakeCounter {
+      constructor(config = createBootyCounterConfig()) {
+        this.config = createBootyCounterConfig(config);
+        this.resetAll();
+      }
+
+      resetAll() {
+        this.points = 0;
+        this.phase = "idle";
+        this.event = "";
+        this.won = false;
+        this.smoothedY = null;
+        this.anchorY = null;
+        this.phaseStartedAt = 0;
+        this.lastPointAt = 0;
+        this.lastMovementAt = 0;
+        this.currentTravel = 0;
+      }
+
+      resetScore(now = 0) {
+        this.points = 0;
+        this.phase = "idle";
+        this.event = "reset";
+        this.won = false;
+        this.anchorY = this.smoothedY;
+        this.phaseStartedAt = now;
+        this.lastPointAt = 0;
+        this.lastMovementAt = now;
+        this.currentTravel = 0;
+      }
+
+      reset(now = 0) {
+        this.resetAll();
+        return this.snapshot(now);
+      }
+
+      updateConfig(config = {}) {
+        this.config = createBootyCounterConfig({ ...this.config, ...config });
+        if (this.points > this.config.goal) this.points = this.config.goal;
+        return this.snapshot(0);
+      }
+
+      update(sample, now) {
+        this.event = "";
+        if (!this.config.enabled) return this.snapshot(now);
+        const confidence = sample?.confidence ?? 1;
+        if (!sample?.ok || confidence < this.config.minPoseConfidence) {
+          if (this.lastMovementAt && now - this.lastMovementAt > this.config.resetAfterIdleMs && this.points > 0) this.resetScore(now);
+          return this.snapshot(now);
+        }
+        const y = Number(sample.y);
+        if (!Number.isFinite(y)) return this.snapshot(now);
+        const smooth = this.config.smoothing;
+        this.smoothedY = this.smoothedY === null ? y : this.smoothedY * (1 - smooth) + y * smooth;
+        if (this.anchorY === null) {
+          this.anchorY = this.smoothedY;
+          this.phaseStartedAt = now;
+          this.lastMovementAt = now;
+          return this.snapshot(now);
+        }
+        const threshold = this.config.minShakeDistance * this.config.strictness;
+        const cooldown = this.config.minMsBetweenPoints * Math.max(0.6, this.config.strictness);
+        const delta = this.smoothedY - this.anchorY;
+        const travel = Math.abs(delta);
+        this.currentTravel = travel;
+        if (travel >= threshold * 0.35) {
+          this.lastMovementAt = now;
+        } else if (this.points > 0 && now - this.lastMovementAt > this.config.resetAfterIdleMs) {
+          this.resetScore(now);
+          return this.snapshot(now);
+        }
+        if (now - this.phaseStartedAt > this.config.maxCycleMs) {
+          this.phase = "idle";
+          this.anchorY = this.smoothedY;
+          this.phaseStartedAt = now;
+          return this.snapshot(now);
+        }
+        if (this.phase === "idle" && travel >= threshold) {
+          this.phase = delta > 0 ? "down" : "up";
+          this.anchorY = this.smoothedY;
+          this.phaseStartedAt = now;
+          return this.snapshot(now);
+        }
+        if (this.phase !== "idle" && travel >= threshold) {
+          const reversed = (this.phase === "down" && delta < 0) || (this.phase === "up" && delta > 0);
+          if (reversed && now - this.lastPointAt >= cooldown) {
+            this.points += 1;
+            this.event = "point";
+            this.lastPointAt = now;
+            this.lastMovementAt = now;
+            this.won = this.points >= this.config.goal;
+            this.phase = "idle";
+            this.anchorY = this.smoothedY;
+            this.phaseStartedAt = now;
+          }
+        }
+        return this.snapshot(now);
+      }
+
+      snapshot(now = 0) {
+        return {
+          points: this.points,
+          goal: this.config.goal,
+          progress: this.config.goal > 0 ? Math.min(1, this.points / this.config.goal) : 0,
+          phase: this.phase,
+          event: this.event,
+          won: this.won,
+          travel: this.currentTravel,
+          strictness: this.config.strictness,
+          idleRemainingMs: Math.max(0, this.config.resetAfterIdleMs - (this.lastMovementAt ? now - this.lastMovementAt : 0))
+        };
+      }
+    }
+
+    const canvas = document.getElementById("stage");
+    const ctx = canvas.getContext("2d", { alpha: false });
+    const video = document.getElementById("video");
+    const statusEl = document.getElementById("status");
+    const statsEl = document.getElementById("stats");
+    const audioReadout = document.getElementById("audioReadout");
+    const centerReadout = document.getElementById("centerReadout");
+    const hudError = document.getElementById("hudError");
+    const overlay = document.getElementById("overlay");
+    const errorText = document.getElementById("errorText");
+    const startBtn = document.getElementById("startBtn");
+    const fullscreenBtn = document.getElementById("fullscreenBtn");
+    const togglePreviewBtn = document.getElementById("togglePreviewBtn");
+    const resetLayersBtn = document.getElementById("resetLayersBtn");
+    const resetMotionBtn = document.getElementById("resetMotionBtn");
+    const resetAudioBtn = document.getElementById("resetAudioBtn");
+    const clearGhostsBtn = document.getElementById("clearGhostsBtn");
+    const resumeQualityBtn = document.getElementById("resumeQualityBtn");
+    const galleryBtn = document.getElementById("galleryBtn");
+    const galleryOverlay = document.getElementById("galleryOverlay");
+    const galleryCloseBtn = document.getElementById("galleryCloseBtn");
+    const galleryStatus = document.getElementById("galleryStatus");
+    const galleryGrid = document.getElementById("galleryGrid");
+    const bootyTower = document.getElementById("bootyTower");
+    const bootyFill = document.getElementById("bootyFill");
+    const bootyCount = document.getElementById("bootyCount");
+    const bootyGoalMarker = document.getElementById("bootyGoalMarker");
+    const bootyCounterReadout = document.getElementById("bootyCounterReadout");
+    const bootyEnabledInput = document.getElementById("bootyEnabled");
+    const bootyStrictnessInput = document.getElementById("bootyStrictness");
+    const bootyResetMsInput = document.getElementById("bootyResetMs");
+    const bootyGoalInput = document.getElementById("bootyGoal");
+    const bootyShowStatusInput = document.getElementById("bootyShowStatus");
+    const bootyShowDebugInput = document.getElementById("bootyShowDebug");
+    const winCaptureEnabledInput = document.getElementById("winCaptureEnabled");
+    const winCaptureUploadEnabledInput = document.getElementById("winCaptureUploadEnabled");
+    const winCapturePreWinCountInput = document.getElementById("winCapturePreWinCount");
+    const previewWinBtn = document.getElementById("previewWinBtn");
+    const presetSelect = document.getElementById("presetSelect");
+    const loadPresetBtn = document.getElementById("loadPresetBtn");
+    const savePresetBtn = document.getElementById("savePresetBtn");
+    const deletePresetBtn = document.getElementById("deletePresetBtn");
+    const presetNameInput = document.getElementById("presetName");
+    const saveAsPresetBtn = document.getElementById("saveAsPresetBtn");
+    const exportPresetsBtn = document.getElementById("exportPresetsBtn");
+    const importPresetsBtn = document.getElementById("importPresetsBtn");
+    const fsExit = document.getElementById("fsExit");
+    const bandEditor = document.getElementById("bandEditor");
+    const bandEditorCtx = bandEditor.getContext("2d");
+    const bandReadout = document.getElementById("bandReadout");
+    const bodyInputs = Array.from(document.querySelectorAll("#bodyPanel input[type='range']"));
+    const bodyReadout = document.getElementById("bodyReadout");
+    const bandInputs = Array.from(document.querySelectorAll("#bandPanel input[type='range']"));
+    const layerInputs = Array.from(document.querySelectorAll("#layerPanel input[data-layer]"));
+    const blurRadiusInput = document.getElementById("blurRadius");
+    const blurReadout = document.getElementById("blurReadout");
+    const sparkInputs = Array.from(document.querySelectorAll("#sparkPanel input[type='range']"));
+    const sparkReadout = document.getElementById("sparkReadout");
+    const effectsInputs = Array.from(document.querySelectorAll("#effectsPanel input[type='range']"));
+    const effectsReadout = document.getElementById("effectsReadout");
+    const perfInputs = Array.from(document.querySelectorAll("#effectsPanel input[data-perf-key]"));
+    const perfReadout = document.getElementById("perfReadout");
+    const videoDarknessInput = document.getElementById("videoDarkness");
+    const videoDarknessReadout = document.getElementById("videoDarknessReadout");
+    const merkabaEnabledInput = document.getElementById("merkabaEnabled");
+    const merkabaInputs = Array.from(document.querySelectorAll("#effectsPanel input[data-merkaba-key]"));
+    const merkabaReadout = document.getElementById("merkabaReadout");
+    const layerReadouts = {
+      red: document.getElementById("redReadout"),
+      orange: document.getElementById("orangeReadout"),
+      yellow: document.getElementById("yellowReadout"),
+      white: document.getElementById("whiteReadout")
+    };
+    const bandReadouts = {
+      bass: document.getElementById("bassBandReadout"),
+      midlow: document.getElementById("midlowBandReadout"),
+      midhigh: document.getElementById("midhighBandReadout"),
+      high: document.getElementById("highBandReadout")
+    };
+    const bandMeters = {
+      bass: document.getElementById("bassBandMeter"),
+      midlow: document.getElementById("midlowBandMeter"),
+      midhigh: document.getElementById("midhighBandMeter"),
+      high: document.getElementById("highBandMeter")
+    };
+    const PRESET_STORAGE_KEY = "fireDance4PresetsV1";
+    const PRESET_SCHEMA_VERSION = 2;
+    const DEFAULT_PRESET_NAME = "good";
+    const FIREWORK_COLORS = ["#ff1800", "#ff5a00", "#ff9a12", "#ffd447", "#fff1b8"];
+    const BOOTY_COUNTER_CONFIG = createBootyCounterConfig({
+      goal: 69,
+      resetAfterIdleMs: 1000,
+      showStatusCopy: false,
+      showDebugPanel: true,
+      strictness: 1,
+      minShakeDistance: 0.012,
+      minMsBetweenPoints: 180,
+      maxCycleMs: 900,
+      smoothing: 0.35,
+      winningImageUrl: "assets/winning-outline.png",
+      winningImageUrls: ["surprise.png", "surprise2.png"],
+      winningText: "You win! Nice butt",
+      winCaptureEnabled: true,
+      winCaptureUploadEnabled: true,
+      winCaptureUploadEndpoint: "/api/win-captures",
+      winCapturePreWinCount: 3
+    });
+
+    const flameCanvas = document.createElement("canvas");
+    const flameCtx = flameCanvas.getContext("2d");
+    const glowCanvas = document.createElement("canvas");
+    const glowCtx = glowCanvas.getContext("2d");
+    const innerCoreCanvas = document.createElement("canvas");
+    const innerCoreCtx = innerCoreCanvas.getContext("2d");
+    const shellCanvas = document.createElement("canvas");
+    const shellCtx = shellCanvas.getContext("2d");
+    const edgeCanvas = document.createElement("canvas");
+    const edgeCtx = edgeCanvas.getContext("2d");
+    const winningTintCanvas = document.createElement("canvas");
+    const winningTintCtx = winningTintCanvas.getContext("2d");
+    const winCaptureCanvas = document.createElement("canvas");
+    const winCaptureCtx = winCaptureCanvas.getContext("2d");
+
+    const state = {
+      mpVision: null,
+      landmarker: null,
+      connections: [],
+      lastVideoTime: -1,
+      lastFrameAt: 0,
+      frameCount: 0,
+      fpsEMA: 0,
+      inferenceEMA: 0,
+      poseConfidence: 0,
+      landmarkCount: 0,
+      running: false,
+      detectEveryMs: 80,
+      lastDetectAt: 0,
+      result: null,
+      embers: [],
+      audioContext: null,
+      analyser: null,
+      audioSource: null,
+      audioGain: null,
+      audioData: null,
+      audioTimeData: null,
+      audioStream: null,
+      audioInputLevel: 0,
+      audioBands: {
+        bass: 0,
+        midlow: 0,
+        midhigh: 0,
+        high: 0
+      },
+      audioBaselines: {
+        bass: 0,
+        midlow: 0,
+        midhigh: 0,
+        high: 0
+      },
+      audioOnsets: {
+        bass: 0,
+        midlow: 0,
+        midhigh: 0,
+        high: 0
+      },
+      audioPeaks: {
+        bass: 0,
+        midlow: 0,
+        midhigh: 0,
+        high: 0
+      },
+      layerControls: {
+        red: { size: 1, intensity: 1 },
+        orange: { size: 1, intensity: 1 },
+        yellow: { size: 1, intensity: 1 },
+        white: { size: 1, intensity: 1 }
+      },
+      blurControl: 1,
+      sparkControls: {
+        speed: 1,
+        travel: 1,
+        size: 1,
+        density: 1
+      },
+      bodyControls: {
+        booty: 1,
+        bottomWidth: 1,
+        fluidity: 1,
+        motionSensitivity: 1,
+        rippleSize: 1
+      },
+      bandConfig: {
+        crossovers: [120, 420, 2200]
+      },
+      bandControls: {
+        bass: { intensity: 1, reactivity: 1 },
+        midlow: { intensity: 1, reactivity: 1 },
+        midhigh: { intensity: 1, reactivity: 1 },
+        high: { intensity: 1, reactivity: 1 }
+      },
+      motion: {
+        energy: 0,
+        burst: 0,
+        dirX: 0,
+        dirY: -1,
+        lastCenter: null,
+        lastPoseAt: 0
+      },
+      poseFlow: {
+        points: {},
+        lastAt: 0
+      },
+      sparkCooldowns: {
+        bass: 0,
+        midlow: 0,
+        midhigh: 0,
+        high: 0
+      },
+      effectsControls: {
+        ghosts: 1,
+        tongues: 1,
+        edgeTurbulence: 1
+      },
+      perfToggles: {
+        backdrop: false,
+        whiteCore: true,
+        edgeBoost: true,
+        glowHeat: true,
+        ghostTrails: true,
+        hotCores: true,
+        velocityLicks: true,
+        flameTongues: true,
+        particles: true
+      },
+      videoDarkness: 0.7,
+      merkabaControls: {
+        enabled: false,
+        opacity: 0.45,
+        scale: 1.1,
+        speed: 0.7,
+        density: 3
+      },
+      quality: {
+        level: 3,
+        label: "Ultra",
+        minLevel: 3,
+        maxLevel: 3,
+        lowFpsFrames: 0,
+        highFpsFrames: 0
+      },
+      ghostFrames: [],
+      lastGhostAt: 0,
+      draggingBandHandle: null,
+      presets: {},
+      bootyCounter: new BootyShakeCounter(BOOTY_COUNTER_CONFIG),
+      bootyCounterConfig: { ...BOOTY_COUNTER_CONFIG },
+      bootyBursts: [],
+      winningBursts: [],
+      winningImages: [],
+      lastWinAt: 0,
+      winCapture: {
+        enabled: true,
+        uploadEnabled: true,
+        uploadEndpoint: "/api/win-captures",
+        active: false,
+        dataUrl: "",
+        preWinCount: 3,
+        preWinFrames: [],
+        uploaded: false,
+        uploading: false,
+        capturedAt: 0
+      }
+    };
+
+    function setStatus(text) {
+      statusEl.textContent = text;
+    }
+
+    function setError(text) {
+      errorText.textContent = text || "";
+      hudError.textContent = text ? `Error ${text}` : "Error none";
+    }
+
+    function syncBootyCounterConfigFromInputs() {
+      state.bootyCounterConfig = createBootyCounterConfig({
+        ...state.bootyCounterConfig,
+        enabled: bootyEnabledInput.checked,
+        strictness: Number(bootyStrictnessInput.value) / 100,
+        resetAfterIdleMs: Number(bootyResetMsInput.value),
+        goal: Number(bootyGoalInput.value),
+        showStatusCopy: bootyShowStatusInput.checked,
+        showDebugPanel: bootyShowDebugInput.checked,
+        winCaptureEnabled: winCaptureEnabledInput.checked,
+        winCaptureUploadEnabled: winCaptureUploadEnabledInput.checked,
+        winCapturePreWinCount: Number(winCapturePreWinCountInput.value)
+      });
+      state.winCapture.enabled = state.bootyCounterConfig.winCaptureEnabled;
+      state.winCapture.uploadEnabled = state.bootyCounterConfig.winCaptureUploadEnabled;
+      state.winCapture.uploadEndpoint = state.bootyCounterConfig.winCaptureUploadEndpoint;
+      state.winCapture.preWinCount = state.bootyCounterConfig.winCapturePreWinCount;
+      if (state.winCapture.preWinFrames.length > state.winCapture.preWinCount) {
+        state.winCapture.preWinFrames.splice(0, state.winCapture.preWinFrames.length - state.winCapture.preWinCount);
+      }
+      state.bootyCounter.updateConfig(state.bootyCounterConfig);
+      if (!state.bootyCounterConfig.enabled) {
+        state.bootyBursts = [];
+        state.winningBursts = [];
+        clearWinningCameraCapture();
+      }
+      statusEl.classList.toggle("hidden", !state.bootyCounterConfig.showStatusCopy);
+      statsEl.classList.toggle("hidden", !state.bootyCounterConfig.showDebugPanel);
+      audioReadout.classList.toggle("hidden", !state.bootyCounterConfig.showDebugPanel);
+      centerReadout.classList.toggle("hidden", !state.bootyCounterConfig.showDebugPanel);
+      hudError.classList.toggle("hidden", !state.bootyCounterConfig.showDebugPanel);
+      updateBootyCounterUi(state.bootyCounterConfig.enabled
+        ? state.bootyCounter.snapshot(performance.now())
+        : state.bootyCounter.reset(performance.now()));
+    }
+
+    function syncBootyCounterInputsFromConfig() {
+      bootyEnabledInput.checked = state.bootyCounterConfig.enabled;
+      bootyStrictnessInput.value = Math.round(state.bootyCounterConfig.strictness * 100);
+      bootyResetMsInput.value = state.bootyCounterConfig.resetAfterIdleMs;
+      bootyGoalInput.value = state.bootyCounterConfig.goal;
+      bootyShowStatusInput.checked = state.bootyCounterConfig.showStatusCopy;
+      bootyShowDebugInput.checked = state.bootyCounterConfig.showDebugPanel;
+      winCaptureEnabledInput.checked = state.bootyCounterConfig.winCaptureEnabled;
+      winCaptureUploadEnabledInput.checked = state.bootyCounterConfig.winCaptureUploadEnabled;
+      winCapturePreWinCountInput.value = state.bootyCounterConfig.winCapturePreWinCount;
+      syncBootyCounterConfigFromInputs();
+    }
+
+    function applyBootyCounterPresetConfig(config) {
+      state.bootyCounterConfig = createBootyCounterConfig({
+        ...state.bootyCounterConfig,
+        ...cloneBootyCounterPresetConfig(config)
+      });
+      syncBootyCounterInputsFromConfig();
+    }
+
+    function updateBootyCounterUi(snapshot) {
+      bootyTower.classList.toggle("hidden", !state.bootyCounterConfig.enabled);
+      if (!state.bootyCounterConfig.enabled) {
+        bootyFill.style.height = "0%";
+        bootyCount.textContent = "Off";
+        bootyGoalMarker.textContent = `${snapshot.goal}`;
+        bootyTower.classList.remove("winning");
+        bootyCounterReadout.textContent = "Off";
+        return;
+      }
+      const points = Math.min(snapshot.points, snapshot.goal);
+      const progress = clamp(snapshot.progress, 0, 1);
+      bootyFill.style.height = `${Math.round(progress * 100)}%`;
+      bootyCount.textContent = String(points);
+      bootyGoalMarker.textContent = `${snapshot.goal}`;
+      bootyTower.classList.toggle("winning", snapshot.won);
+      const resetSeconds = (state.bootyCounterConfig.resetAfterIdleMs / 1000).toFixed(1).replace(/\.0$/, "");
+      bootyCounterReadout.textContent = `${points} / ${snapshot.goal} | strict ${Math.round(snapshot.strictness * 100)}% | reset ${resetSeconds}s | ${snapshot.phase} | travel ${snapshot.travel.toFixed(3)}`;
+    }
+
+    function getBootySample(landmarks) {
+      return extractPelvisShakeSample(landmarks);
+    }
+
+    function updateBootyCounterFromPose(landmarks, now) {
+      if (!state.bootyCounterConfig.enabled) {
+        updateBootyCounterUi(state.bootyCounter.reset(now));
+        return;
+      }
+      const snapshot = state.bootyCounter.update(getBootySample(landmarks), now);
+      if (snapshot.event === "reset") {
+        clearWinningCameraCapture();
+      }
+      if (snapshot.event === "point" && state.bootyCounterConfig.showStatusCopy) {
+        setStatus("Shake your booty on the dance floor.");
+      } else if (snapshot.event === "reset" && state.bootyCounterConfig.showStatusCopy) {
+        setStatus("Keep shaking to hold the streak.");
+      }
+      if (snapshot.event === "point") {
+        triggerBootyPointBurst(now);
+        capturePreWinBounceFrame(snapshot, now);
+      }
+      if (snapshot.event === "point" && snapshot.won) {
+        captureWinningCameraFrame(snapshot, now);
+        triggerWinningAnimation(now);
+      }
+      updateBootyCounterUi(snapshot);
+    }
+
+    function updateBootyCounterWithoutPose(now) {
+      if (!state.bootyCounterConfig.enabled) {
+        updateBootyCounterUi(state.bootyCounter.reset(now));
+        return;
+      }
+      const snapshot = state.bootyCounter.update({ ok: false, confidence: 0 }, now);
+      if (snapshot.event === "reset") {
+        clearWinningCameraCapture();
+      }
+      updateBootyCounterUi(snapshot);
+    }
+
+    function getPreviewWinSnapshot() {
+      return {
+        points: state.bootyCounterConfig.goal,
+        goal: state.bootyCounterConfig.goal,
+        progress: 1,
+        phase: "preview",
+        event: "point",
+        won: true,
+        travel: 0,
+        strictness: state.bootyCounterConfig.strictness,
+        idleRemainingMs: state.bootyCounterConfig.resetAfterIdleMs
+      };
+    }
+
+    function renderCaptureGallery(captures) {
+      galleryGrid.innerHTML = "";
+      galleryStatus.textContent = captures.length ? `${captures.length} saved photos` : "No saved photos yet.";
+      for (const item of captures) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "galleryItem";
+        const img = document.createElement("img");
+        img.src = item.url;
+        img.alt = item.kind || "Saved photo";
+        img.loading = "lazy";
+        const meta = document.createElement("div");
+        meta.className = "galleryMeta";
+        const when = item.capturedAt ? new Date(item.capturedAt).toLocaleString() : "Unknown time";
+        meta.innerHTML = `<strong>${item.kind || "capture"} #${item.sequence || 0}</strong><span>${item.points || 0}/${item.goal || 0}</span><span>${when}</span>`;
+        button.append(img, meta);
+        button.addEventListener("click", () => window.open(item.url, "_blank", "noopener"));
+        galleryGrid.appendChild(button);
+      }
+    }
+
+    async function openCaptureGallery() {
+      galleryOverlay.classList.remove("hidden");
+      galleryStatus.textContent = "Loading...";
+      galleryGrid.innerHTML = "";
+      try {
+        const response = await fetch("/api/win-captures");
+        if (!response.ok) throw new Error(`Gallery ${response.status}`);
+        const data = await response.json();
+        renderCaptureGallery(Array.isArray(data.captures) ? data.captures : []);
+      } catch (error) {
+        console.error(error);
+        galleryStatus.textContent = "Gallery failed to load.";
+      }
+    }
+
+    function updateAudioReadout() {
+      const micState = state.analyser ? "Mic On" : "Mic --";
+      audioReadout.textContent = `${micState} • In ${Math.round(state.audioInputLevel * 100)} • Bass ${Math.round(state.audioBands.bass * 100)} • MidLow ${Math.round(state.audioBands.midlow * 100)} • MidHigh ${Math.round(state.audioBands.midhigh * 100)} • High ${Math.round(state.audioBands.high * 100)}`;
+    }
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function scaleShape(shape, amount) {
+      const scaled = {};
+      for (const [key, value] of Object.entries(shape)) {
+        scaled[key] = key === "headLift" || key === "bootyMul" || key === "bottomWidthMul" ? value : value * amount;
+      }
+      return scaled;
+    }
+
+    function updateLayerReadouts() {
+      blurReadout.textContent = `Radius ${Math.round(state.blurControl * 100)}%`;
+      for (const [name, control] of Object.entries(state.layerControls)) {
+        layerReadouts[name].textContent = `Size ${Math.round(control.size * 100)}% • Intensity ${Math.round(control.intensity * 100)}%`;
+      }
+    }
+
+    function updateSparkReadout() {
+      sparkReadout.textContent = `Speed ${Math.round(state.sparkControls.speed * 100)}% • Travel ${Math.round(state.sparkControls.travel * 100)}% • Size ${Math.round(state.sparkControls.size * 100)}% • Density ${Math.round(state.sparkControls.density * 100)}%`;
+    }
+
+    function updateEffectsReadout() {
+      effectsReadout.textContent = `Ghosts ${Math.round(state.effectsControls.ghosts * 100)}% • Tongues ${Math.round(state.effectsControls.tongues * 100)}% • Edge ${Math.round(state.effectsControls.edgeTurbulence * 100)}%`;
+    }
+
+    function updatePerfReadout() {
+      const disabled = Object.entries(state.perfToggles)
+        .filter(([, enabled]) => !enabled)
+        .map(([key]) => ({
+          backdrop: "backdrop",
+          whiteCore: "white core",
+          edgeBoost: "edge boost",
+          glowHeat: "glow heat",
+          ghostTrails: "ghosts",
+          hotCores: "hot cores",
+          velocityLicks: "licks",
+          flameTongues: "tongues",
+          particles: "particles"
+        })[key]);
+      perfReadout.textContent = disabled.length ? `Off: ${disabled.join(", ")}` : "All visual passes on";
+    }
+
+    function updateVideoDarknessReadout() {
+      videoDarknessReadout.textContent = `Video darkness ${Math.round(state.videoDarkness * 100)}%`;
+    }
+
+    function updateMerkabaReadout() {
+      const control = state.merkabaControls;
+      merkabaReadout.textContent = `${control.enabled ? "On" : "Off"} • Opacity ${Math.round(control.opacity * 100)}% • Scale ${Math.round(control.scale * 100)}% • Speed ${Math.round(control.speed * 100)}% • Layers ${Math.round(control.density)}`;
+    }
+
+    function updateBodyReadout() {
+      bodyReadout.textContent = `Booty ${Math.round(state.bodyControls.booty * 100)}% • Bottom ${Math.round(state.bodyControls.bottomWidth * 100)}% • Fluid ${Math.round(state.bodyControls.fluidity * 100)}% • Motion ${Math.round(state.bodyControls.motionSensitivity * 100)}% • Ripple ${Math.round(state.bodyControls.rippleSize * 100)}%`;
+    }
+
+    function updateBandReadouts() {
+      bandReadout.textContent = `${Math.round(state.bandConfig.crossovers[0])} Hz • ${Math.round(state.bandConfig.crossovers[1])} Hz • ${Math.round(state.bandConfig.crossovers[2])} Hz`;
+      for (const [name, control] of Object.entries(state.bandControls)) {
+        bandReadouts[name].textContent = `Intensity ${Math.round(control.intensity * 100)}% • Reactivity ${Math.round(control.reactivity * 100)}%`;
+        const level = clamp(state.audioBands[name] || 0, 0, 1);
+        bandMeters[name].style.width = `${Math.round(level * 100)}%`;
+      }
+    }
+
+    function syncEffectsControlsFromState() {
+      for (const input of effectsInputs) {
+        input.value = Math.round(state.effectsControls[input.dataset.effectsKey] * 100);
+      }
+      updateEffectsReadout();
+    }
+
+    function syncPerfTogglesFromState() {
+      for (const input of perfInputs) {
+        input.checked = state.perfToggles[input.dataset.perfKey];
+      }
+      updatePerfReadout();
+    }
+
+    function syncVideoDarknessFromState() {
+      videoDarknessInput.value = Math.round(state.videoDarkness * 100);
+      updateVideoDarknessReadout();
+    }
+
+    function syncMerkabaControlsFromState() {
+      merkabaEnabledInput.checked = state.merkabaControls.enabled;
+      for (const input of merkabaInputs) {
+        const key = input.dataset.merkabaKey;
+        input.value = key === "density"
+          ? Math.round(state.merkabaControls[key])
+          : Math.round(state.merkabaControls[key] * 100);
+      }
+      updateMerkabaReadout();
+    }
+
+    function sampleBandRange(fromHz, toHz) {
+      if (!state.analyser || !state.audioData || !state.audioContext) return 0;
+      const nyquist = state.audioContext.sampleRate * 0.5;
+      const binCount = state.audioData.length;
+      const start = clamp(Math.floor((fromHz / nyquist) * binCount), 0, binCount - 1);
+      const end = clamp(Math.ceil((toHz / nyquist) * binCount), start + 1, binCount);
+      let total = 0;
+      let count = 0;
+      for (let i = start; i < end; i++) {
+        total += state.audioData[i];
+        count++;
+      }
+      return count ? total / count / 255 : 0;
+    }
+
+    function freqToEditorX(freq) {
+      const minF = 20;
+      const maxF = 9000;
+      const t = (Math.log(freq) - Math.log(minF)) / (Math.log(maxF) - Math.log(minF));
+      return 18 + t * (bandEditor.width - 36);
+    }
+
+    function editorXToFreq(x) {
+      const minF = 20;
+      const maxF = 9000;
+      const t = clamp((x - 18) / (bandEditor.width - 36), 0, 1);
+      return Math.exp(Math.log(minF) + t * (Math.log(maxF) - Math.log(minF)));
+    }
+
+    function drawBandEditor() {
+      const w = bandEditor.width;
+      const h = bandEditor.height;
+      bandEditorCtx.clearRect(0, 0, w, h);
+      bandEditorCtx.fillStyle = "rgba(6, 4, 3, 0.98)";
+      bandEditorCtx.fillRect(0, 0, w, h);
+
+      const colors = ["rgba(255, 43, 28, 0.22)", "rgba(255, 138, 28, 0.2)", "rgba(255, 211, 74, 0.18)", "rgba(255, 248, 240, 0.14)"];
+      const stops = [20, ...state.bandConfig.crossovers, 9000].map(freqToEditorX);
+
+      for (let i = 0; i < 4; i++) {
+        bandEditorCtx.fillStyle = colors[i];
+        bandEditorCtx.fillRect(stops[i], 10, stops[i + 1] - stops[i], h - 20);
+      }
+
+      bandEditorCtx.strokeStyle = "rgba(255,255,255,0.08)";
+      bandEditorCtx.lineWidth = 1;
+      for (const hz of [40, 80, 160, 320, 640, 1250, 2500, 5000]) {
+        const x = freqToEditorX(hz);
+        bandEditorCtx.beginPath();
+        bandEditorCtx.moveTo(x, 8);
+        bandEditorCtx.lineTo(x, h - 8);
+        bandEditorCtx.stroke();
+      }
+
+      state.bandConfig.crossovers.forEach((freq, index) => {
+        const x = freqToEditorX(freq);
+        bandEditorCtx.strokeStyle = "rgba(255, 245, 235, 0.5)";
+        bandEditorCtx.lineWidth = 2;
+        bandEditorCtx.beginPath();
+        bandEditorCtx.moveTo(x, 10);
+        bandEditorCtx.lineTo(x, h - 10);
+        bandEditorCtx.stroke();
+        bandEditorCtx.fillStyle = state.draggingBandHandle === index ? "#fff5eb" : "#ffb466";
+        bandEditorCtx.beginPath();
+        bandEditorCtx.arc(x, h * 0.5, 7, 0, Math.PI * 2);
+        bandEditorCtx.fill();
+      });
+    }
+
+    function findBandHandle(clientX, clientY) {
+      const rect = bandEditor.getBoundingClientRect();
+      const x = ((clientX - rect.left) / rect.width) * bandEditor.width;
+      const y = ((clientY - rect.top) / rect.height) * bandEditor.height;
+      for (let i = 0; i < state.bandConfig.crossovers.length; i++) {
+        const hx = freqToEditorX(state.bandConfig.crossovers[i]);
+        if (Math.hypot(x - hx, y - bandEditor.height * 0.5) <= 16) return i;
+      }
+      return null;
+    }
+
+    function moveBandHandle(index, clientX) {
+      const rect = bandEditor.getBoundingClientRect();
+      const x = ((clientX - rect.left) / rect.width) * bandEditor.width;
+      const minGap = 40;
+      const prev = index === 0 ? 30 : state.bandConfig.crossovers[index - 1] + minGap;
+      const next = index === state.bandConfig.crossovers.length - 1 ? 8500 : state.bandConfig.crossovers[index + 1] - minGap;
+      state.bandConfig.crossovers[index] = clamp(editorXToFreq(x), prev, next);
+      updateBandReadouts();
+      drawBandEditor();
+    }
+
+    function updateAudioBands() {
+      if (!state.analyser || !state.audioData) {
+        updateAudioReadout();
+        updateBandReadouts();
+        return;
+      }
+
+      state.analyser.getByteFrequencyData(state.audioData);
+      if (state.audioTimeData) {
+        state.analyser.getByteTimeDomainData(state.audioTimeData);
+        let energy = 0;
+        for (let i = 0; i < state.audioTimeData.length; i++) {
+          const centered = (state.audioTimeData[i] - 128) / 128;
+          energy += centered * centered;
+        }
+        state.audioInputLevel = clamp(Math.sqrt(energy / state.audioTimeData.length) * 3.2, 0, 1);
+      }
+      const [c1, c2, c3] = state.bandConfig.crossovers;
+      const ranges = {
+        bass: sampleBandRange(20, c1),
+        midlow: sampleBandRange(c1, c2),
+        midhigh: sampleBandRange(c2, c3),
+        high: sampleBandRange(c3, 9000)
+      };
+
+      for (const [name, raw] of Object.entries(ranges)) {
+        const control = state.bandControls[name];
+        const next = Math.pow(clamp(raw * (1.9 * control.intensity), 0, 1), 1.15);
+        const prev = state.audioBands[name];
+        const smoothing = clamp(0.82 - control.reactivity * 0.18, 0.52, 0.9);
+        const baseline = state.audioBaselines[name] * 0.96 + next * 0.04;
+        state.audioBaselines[name] = baseline;
+        state.audioBands[name] = state.audioBands[name] * smoothing + next * (1 - smoothing);
+        state.audioPeaks[name] = Math.max(0, state.audioBands[name] - prev) * (0.8 + control.reactivity * 0.9);
+        state.audioOnsets[name] = Math.max(0, next - baseline * (1.08 + (2.2 - control.reactivity) * 0.06));
+      }
+
+      updateAudioReadout();
+      updateBandReadouts();
+    }
+
+    async function setupAudio(stream) {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) {
+        updateAudioReadout();
+        return;
+      }
+
+      if (!state.audioContext) {
+        state.audioContext = new AudioCtx();
+      }
+      if (state.audioContext.state === "suspended") {
+        await state.audioContext.resume();
+      }
+
+      state.audioStream = stream;
+      state.audioSource = state.audioContext.createMediaStreamSource(stream);
+      state.audioGain = state.audioContext.createGain();
+      state.audioGain.gain.value = 2.6;
+      state.analyser = state.audioContext.createAnalyser();
+      state.analyser.fftSize = 512;
+      state.analyser.smoothingTimeConstant = 0.62;
+      state.audioData = new Uint8Array(state.analyser.frequencyBinCount);
+      state.audioTimeData = new Uint8Array(state.analyser.fftSize);
+      state.audioSource.connect(state.audioGain);
+      state.audioGain.connect(state.analyser);
+      updateAudioReadout();
+      updateBandReadouts();
+    }
+
+    function syncLayerControlsFromState() {
+      blurRadiusInput.value = Math.round(state.blurControl * 100);
+      for (const input of layerInputs) {
+        const control = state.layerControls[input.dataset.layer];
+        input.value = Math.round(control[input.dataset.key] * 100);
+      }
+      updateLayerReadouts();
+    }
+
+    function syncSparkControlsFromState() {
+      for (const input of sparkInputs) {
+        input.value = Math.round(state.sparkControls[input.dataset.sparkKey] * 100);
+      }
+      updateSparkReadout();
+    }
+
+    function syncBodyControlsFromState() {
+      for (const input of bodyInputs) {
+        input.value = Math.round(state.bodyControls[input.dataset.bodyKey] * 100);
+      }
+      updateBodyReadout();
+    }
+
+    function syncBandControlsFromState() {
+      for (const input of bandInputs) {
+        input.value = Math.round(state.bandControls[input.dataset.band][input.dataset.bandKey] * 100);
+      }
+      updateBandReadouts();
+      drawBandEditor();
+    }
+
+    function getDefaultLayerControls() {
+      return {
+        red: { size: 1, intensity: 1 },
+        orange: { size: 1, intensity: 1 },
+        yellow: { size: 1, intensity: 1 },
+        white: { size: 1, intensity: 1 }
+      };
+    }
+
+    function getDefaultBlurControl() {
+      return 1;
+    }
+
+    function getDefaultSparkControls() {
+      return {
+        speed: 1,
+        travel: 1,
+        size: 1,
+        density: 1
+      };
+    }
+
+    function getDefaultBodyControls() {
+      return {
+        booty: 1,
+        bottomWidth: 1,
+        fluidity: 1,
+        motionSensitivity: 1,
+        rippleSize: 1
+      };
+    }
+
+    function getDefaultEffectsControls() {
+      return {
+        ghosts: 1,
+        tongues: 1,
+        edgeTurbulence: 1
+      };
+    }
+
+    function getDefaultPerfToggles() {
+      return {
+        backdrop: false,
+        whiteCore: true,
+        edgeBoost: true,
+        glowHeat: true,
+        ghostTrails: true,
+        hotCores: true,
+        velocityLicks: true,
+        flameTongues: true,
+        particles: true
+      };
+    }
+
+    function getDefaultVideoDarkness() {
+      return 0.7;
+    }
+
+    function getDefaultMerkabaControls() {
+      return {
+        enabled: false,
+        opacity: 0.45,
+        scale: 1.1,
+        speed: 0.7,
+        density: 3
+      };
+    }
+
+    function getDefaultBandConfig() {
+      return {
+        crossovers: [120, 420, 2200]
+      };
+    }
+
+    function getDefaultBandControls() {
+      return {
+        bass: { intensity: 1, reactivity: 1 },
+        midlow: { intensity: 1, reactivity: 1 },
+        midhigh: { intensity: 1, reactivity: 1 },
+        high: { intensity: 1, reactivity: 1 }
+      };
+    }
+
+    function cloneLayerControls(source) {
+      return {
+        red: { ...source.red },
+        orange: { ...source.orange },
+        yellow: { ...source.yellow },
+        white: { ...source.white }
+      };
+    }
+
+    function cloneSparkControls(source) {
+      return {
+        speed: source.speed,
+        travel: source.travel,
+        size: source.size,
+        density: source.density
+      };
+    }
+
+    function cloneBodyControls(source) {
+      return {
+        booty: source.booty ?? 1,
+        bottomWidth: source.bottomWidth ?? 1,
+        fluidity: source.fluidity ?? 1,
+        motionSensitivity: source.motionSensitivity ?? 1,
+        rippleSize: source.rippleSize ?? 1
+      };
+    }
+
+    function cloneEffectsControls(source) {
+      return {
+        ghosts: source.ghosts ?? 1,
+        tongues: source.tongues ?? 1,
+        edgeTurbulence: source.edgeTurbulence ?? 1
+      };
+    }
+
+    function clonePerfToggles(source) {
+      return {
+        ...getDefaultPerfToggles(),
+        ...(source || {})
+      };
+    }
+
+    function cloneBootyCounterPresetConfig(source) {
+      const defaults = createBootyCounterConfig();
+      return {
+        enabled: source?.enabled ?? defaults.enabled,
+        goal: clamp(Math.round(numberOrDefault(source?.goal, defaults.goal)), 5, 150),
+        resetAfterIdleMs: clamp(Math.round(numberOrDefault(source?.resetAfterIdleMs, defaults.resetAfterIdleMs)), 400, 3000),
+        showStatusCopy: source?.showStatusCopy ?? defaults.showStatusCopy,
+        showDebugPanel: source?.showDebugPanel ?? defaults.showDebugPanel,
+        strictness: clamp(numberOrDefault(source?.strictness, defaults.strictness), 0.5, 2),
+        winCaptureEnabled: source?.winCaptureEnabled ?? defaults.winCaptureEnabled,
+        winCaptureUploadEnabled: source?.winCaptureUploadEnabled ?? defaults.winCaptureUploadEnabled,
+        winCapturePreWinCount: clamp(Math.round(numberOrDefault(source?.winCapturePreWinCount, defaults.winCapturePreWinCount)), 0, 5)
+      };
+    }
+
+    function cloneMerkabaControls(source) {
+      const defaults = getDefaultMerkabaControls();
+      return {
+        enabled: source?.enabled ?? defaults.enabled,
+        opacity: clamp(Number(source?.opacity ?? defaults.opacity), 0, 1),
+        scale: clamp(Number(source?.scale ?? defaults.scale), 0.5, 1.8),
+        speed: clamp(Number(source?.speed ?? defaults.speed), 0, 2),
+        density: clamp(Math.round(Number(source?.density ?? defaults.density)), 1, 5)
+      };
+    }
+
+    function cloneBandConfig(source) {
+      return {
+        crossovers: [...source.crossovers]
+      };
+    }
+
+    function cloneBandControls(source) {
+      return {
+        bass: { ...source.bass },
+        midlow: { ...source.midlow },
+        midhigh: { ...source.midhigh },
+        high: { ...source.high }
+      };
+    }
+
+    function numberOrDefault(value, fallback) {
+      const number = Number(value);
+      return Number.isFinite(number) ? number : fallback;
+    }
+
+    function normalizePresetData(data) {
+      const defaults = getDefaultLayerControls();
+      const normalized = {};
+      for (const [name, controls] of Object.entries(data || {})) {
+        normalized[name] = {
+          red: {
+            size: clamp(Number(controls?.red?.size) || defaults.red.size, 0.35, 1.8),
+            intensity: clamp(Number(controls?.red?.intensity) || defaults.red.intensity, 0, 1.8)
+          },
+          orange: {
+            size: clamp(Number(controls?.orange?.size) || defaults.orange.size, 0.35, 1.8),
+            intensity: clamp(Number(controls?.orange?.intensity) || defaults.orange.intensity, 0, 1.8)
+          },
+          yellow: {
+            size: clamp(Number(controls?.yellow?.size) || defaults.yellow.size, 0.35, 1.8),
+            intensity: clamp(Number(controls?.yellow?.intensity) || defaults.yellow.intensity, 0, 1.8)
+          },
+          white: {
+            size: clamp(Number(controls?.white?.size) || defaults.white.size, 0.35, 1.8),
+            intensity: clamp(Number(controls?.white?.intensity) || defaults.white.intensity, 0, 1.8)
+          },
+          blurControl: clamp(numberOrDefault(controls?.blurControl, getDefaultBlurControl()), 0, 5),
+          sparkControls: {
+            speed: clamp(numberOrDefault(controls?.sparkControls?.speed, 1), 0.5, 2.5),
+            travel: clamp(numberOrDefault(controls?.sparkControls?.travel, 1), 0.5, 2.6),
+            size: clamp(numberOrDefault(controls?.sparkControls?.size, 1), 0.5, 2.2),
+            density: clamp(numberOrDefault(controls?.sparkControls?.density, 1), 0.4, 2.4)
+          },
+          bodyControls: {
+            booty: clamp(numberOrDefault(controls?.bodyControls?.booty, 1), 0.6, 3.2),
+            bottomWidth: clamp(numberOrDefault(controls?.bodyControls?.bottomWidth, 1), 0.8, 2.4),
+            fluidity: clamp(numberOrDefault(controls?.bodyControls?.fluidity, 1), 0.4, 2.4),
+            motionSensitivity: clamp(numberOrDefault(controls?.bodyControls?.motionSensitivity, 1), 0.4, 2.2),
+            rippleSize: clamp(numberOrDefault(controls?.bodyControls?.rippleSize, 1), 0.5, 2.4)
+          },
+          bandConfig: {
+            crossovers: [
+              clamp(numberOrDefault(controls?.bandConfig?.crossovers?.[0], 120), 30, 800),
+              clamp(numberOrDefault(controls?.bandConfig?.crossovers?.[1], 420), 100, 2500),
+              clamp(numberOrDefault(controls?.bandConfig?.crossovers?.[2], 2200), 400, 8500)
+            ]
+          },
+          bandControls: {
+            bass: {
+              intensity: clamp(numberOrDefault(controls?.bandControls?.bass?.intensity, 1), 0, 2.5),
+              reactivity: clamp(numberOrDefault(controls?.bandControls?.bass?.reactivity, 1), 0, 3)
+            },
+            midlow: {
+              intensity: clamp(numberOrDefault(controls?.bandControls?.midlow?.intensity, 1), 0, 2.5),
+              reactivity: clamp(numberOrDefault(controls?.bandControls?.midlow?.reactivity, 1), 0, 3)
+            },
+            midhigh: {
+              intensity: clamp(numberOrDefault(controls?.bandControls?.midhigh?.intensity, 1), 0, 2.5),
+              reactivity: clamp(numberOrDefault(controls?.bandControls?.midhigh?.reactivity, 1), 0, 3)
+            },
+            high: {
+              intensity: clamp(numberOrDefault(controls?.bandControls?.high?.intensity, 1), 0, 2.5),
+              reactivity: clamp(numberOrDefault(controls?.bandControls?.high?.reactivity, 1), 0, 3)
+            }
+          },
+          effectsControls: {
+            ghosts: clamp(numberOrDefault(controls?.effectsControls?.ghosts, 1), 0, 2),
+            tongues: clamp(numberOrDefault(controls?.effectsControls?.tongues, 1), 0, 2),
+            edgeTurbulence: clamp(numberOrDefault(controls?.effectsControls?.edgeTurbulence, 1), 0, 2.2)
+          },
+          videoDarkness: clamp(Number(controls?.videoDarkness ?? getDefaultVideoDarkness()), 0, 1),
+          merkabaControls: cloneMerkabaControls(controls?.merkabaControls),
+          perfToggles: clonePerfToggles(controls?.perfToggles),
+          bootyCounterConfig: cloneBootyCounterPresetConfig(controls?.bootyCounterConfig)
+        };
+      }
+      return normalized;
+    }
+
+    function decodePresetBlob(raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === "object" && parsed.presets) {
+        return normalizePresetData(parsed.presets);
+      }
+      return normalizePresetData(parsed);
+    }
+
+    function encodePresetBlob() {
+      return JSON.stringify({
+        version: PRESET_SCHEMA_VERSION,
+        presets: state.presets
+      });
+    }
+
+    function resetMotionState() {
+      state.motion.energy = 0;
+      state.motion.burst = 0;
+      state.motion.dirX = 0;
+      state.motion.dirY = -1;
+      state.motion.lastCenter = null;
+      state.motion.lastPoseAt = 0;
+      state.poseFlow.points = {};
+      state.poseFlow.lastAt = 0;
+    }
+
+    function resetAudioState() {
+      for (const key of Object.keys(state.audioBands)) {
+        state.audioBands[key] = 0;
+        state.audioBaselines[key] = 0;
+        state.audioOnsets[key] = 0;
+        state.audioPeaks[key] = 0;
+        state.sparkCooldowns[key] = 0;
+      }
+      state.audioInputLevel = 0;
+      updateAudioReadout();
+      updateBandReadouts();
+    }
+
+    function clearGhostState() {
+      state.ghostFrames = [];
+      state.lastGhostAt = 0;
+    }
+
+    function resumeFlameQuality() {
+      state.quality.level = state.quality.maxLevel;
+      state.quality.label = ["Eco", "Low", "Med", "Ultra"][state.quality.level];
+      state.quality.lowFpsFrames = 0;
+      state.quality.highFpsFrames = 0;
+    }
+
+    function primeQualityRecovery() {
+      state.quality.lowFpsFrames = 0;
+      state.quality.highFpsFrames = Math.max(state.quality.highFpsFrames, 24);
+    }
+
+    function updateQualityGovernor() {
+      if (state.fpsEMA < 46) {
+        state.quality.lowFpsFrames++;
+        state.quality.highFpsFrames = 0;
+      } else if (state.fpsEMA > 56) {
+        state.quality.highFpsFrames++;
+        state.quality.lowFpsFrames = 0;
+      } else {
+        state.quality.lowFpsFrames = 0;
+        state.quality.highFpsFrames = 0;
+      }
+
+      if (state.quality.lowFpsFrames > 24 && state.quality.level > state.quality.minLevel) {
+        state.quality.level = Math.max(state.quality.minLevel, state.quality.level - 1);
+        state.quality.lowFpsFrames = 0;
+      } else if (state.quality.highFpsFrames > 48 && state.quality.level < state.quality.maxLevel) {
+        state.quality.level++;
+        state.quality.highFpsFrames = 0;
+      }
+
+      state.quality.label = ["Eco", "Low", "Med", "Ultra"][state.quality.level];
+    }
+    function renderPresetOptions(selected = "") {
+      const names = Object.keys(state.presets).sort((a, b) => a.localeCompare(b));
+      presetSelect.innerHTML = '<option value="">Presets</option>';
+      for (const name of names) {
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = name;
+        if (name === selected) option.selected = true;
+        presetSelect.appendChild(option);
+      }
+    }
+
+    function persistPresets() {
+      try {
+        localStorage.setItem(PRESET_STORAGE_KEY, encodePresetBlob());
+      } catch (error) {
+        console.error(error);
+        setError("Preset save failed.");
+      }
+    }
+
+    function loadPresetsFromStorage() {
+      try {
+        const raw = localStorage.getItem(PRESET_STORAGE_KEY);
+        state.presets = raw ? decodePresetBlob(raw) : {};
+      } catch (error) {
+        console.error(error);
+        state.presets = {};
+      }
+      renderPresetOptions();
+    }
+
+    function applyPreset(name) {
+      const preset = state.presets[name];
+      if (!preset) return;
+      state.layerControls = cloneLayerControls(preset);
+      state.blurControl = clamp(Number(preset.blurControl) || getDefaultBlurControl(), 0, 5);
+      state.sparkControls = cloneSparkControls(preset.sparkControls || getDefaultSparkControls());
+      state.bodyControls = cloneBodyControls(preset.bodyControls || getDefaultBodyControls());
+      state.bandConfig = cloneBandConfig(preset.bandConfig || getDefaultBandConfig());
+      state.bandControls = cloneBandControls(preset.bandControls || getDefaultBandControls());
+      state.effectsControls = cloneEffectsControls(preset.effectsControls || getDefaultEffectsControls());
+      state.perfToggles = clonePerfToggles(preset.perfToggles);
+      state.videoDarkness = clamp(Number(preset.videoDarkness ?? getDefaultVideoDarkness()), 0, 1);
+      state.merkabaControls = cloneMerkabaControls(preset.merkabaControls);
+      syncLayerControlsFromState();
+      syncSparkControlsFromState();
+      syncBodyControlsFromState();
+      syncBandControlsFromState();
+      syncEffectsControlsFromState();
+      syncPerfTogglesFromState();
+      syncVideoDarknessFromState();
+      syncMerkabaControlsFromState();
+      applyBootyCounterPresetConfig(preset.bootyCounterConfig);
+      presetSelect.value = name;
+      presetNameInput.value = name;
+    }
+
+    function applyDefaultPreset() {
+      if (state.presets[DEFAULT_PRESET_NAME]) applyPreset(DEFAULT_PRESET_NAME);
+    }
+
+    function savePreset(name) {
+      const cleanName = name.trim().slice(0, 32);
+      if (!cleanName) {
+        setError("Enter a preset name.");
+        return;
+      }
+      state.presets[cleanName] = cloneLayerControls(state.layerControls);
+      state.presets[cleanName].blurControl = state.blurControl;
+      state.presets[cleanName].sparkControls = cloneSparkControls(state.sparkControls);
+      state.presets[cleanName].bodyControls = cloneBodyControls(state.bodyControls);
+      state.presets[cleanName].bandConfig = cloneBandConfig(state.bandConfig);
+      state.presets[cleanName].bandControls = cloneBandControls(state.bandControls);
+      state.presets[cleanName].effectsControls = cloneEffectsControls(state.effectsControls);
+      state.presets[cleanName].perfToggles = clonePerfToggles(state.perfToggles);
+      state.presets[cleanName].bootyCounterConfig = cloneBootyCounterPresetConfig(state.bootyCounterConfig);
+      state.presets[cleanName].videoDarkness = state.videoDarkness;
+      state.presets[cleanName].merkabaControls = cloneMerkabaControls(state.merkabaControls);
+      persistPresets();
+      renderPresetOptions(cleanName);
+      presetNameInput.value = cleanName;
+      setError("");
+    }
+
+    function deletePreset(name) {
+      if (!name || !state.presets[name]) return;
+      delete state.presets[name];
+      persistPresets();
+      renderPresetOptions();
+      if (presetNameInput.value === name) presetNameInput.value = "";
+      setError("");
+    }
+
+    function updateProjectionMode() {
+      document.body.classList.toggle("projection-mode", Boolean(document.fullscreenElement));
+    }
+
+    function resize() {
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.25);
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      canvas.style.width = width + "px";
+      canvas.style.height = height + "px";
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      flameCanvas.width = width;
+      flameCanvas.height = height;
+      glowCanvas.width = width;
+      glowCanvas.height = height;
+      innerCoreCanvas.width = width;
+      innerCoreCanvas.height = height;
+      shellCanvas.width = width;
+      shellCanvas.height = height;
+      edgeCanvas.width = width;
+      edgeCanvas.height = height;
+    }
+
+    function averagePoint(landmarks, ids) {
+      let sx = 0;
+      let sy = 0;
+      let count = 0;
+      for (const id of ids) {
+        const p = landmarks[id];
+        if (!p || (p.visibility ?? 1) < 0.35) continue;
+        sx += p.x;
+        sy += p.y;
+        count++;
+      }
+      return count ? { x: sx / count, y: sy / count, ok: true } : { x: 0.5, y: 0.5, ok: false };
+    }
+
+    function toScreen(p) {
+      return {
+        x: (1 - p.x) * window.innerWidth,
+        y: p.y * window.innerHeight
+      };
+    }
+
+    function getLandmark(landmarks, id, minVisibility = 0.35) {
+      const p = landmarks[id];
+      return p && (p.visibility ?? 1) >= minVisibility ? toScreen(p) : null;
+    }
+
+    function computeBodyCenter(landmarks) {
+      const torso = averagePoint(landmarks, [11, 12, 23, 24]);
+      const shoulders = averagePoint(landmarks, [11, 12]);
+      const hips = averagePoint(landmarks, [23, 24]);
+      let scale = 0;
+      if (shoulders.ok && hips.ok) {
+        const dx = shoulders.x - hips.x;
+        const dy = shoulders.y - hips.y;
+        scale = Math.hypot(dx, dy);
+      }
+      return { x: torso.x, y: torso.y, scale, ok: torso.ok };
+    }
+
+    function updateMotionDrive(center, now) {
+      const sensitivity = clamp(state.bodyControls.motionSensitivity, 0.4, 2.2);
+      if (!center.ok) {
+        state.motion.energy *= 0.9;
+        state.motion.burst *= 0.9;
+        state.motion.dirX *= 0.9;
+        state.motion.dirY = state.motion.dirY * 0.9 + -1 * 0.1;
+        state.motion.lastCenter = null;
+        return;
+      }
+
+      if (state.motion.lastCenter && state.motion.lastPoseAt) {
+        const dtMs = Math.max(16, now - state.motion.lastPoseAt);
+        const dx = center.x - state.motion.lastCenter.x;
+        const dy = center.y - state.motion.lastCenter.y;
+        const dist = Math.hypot(dx, dy);
+        const velocity = dist / (dtMs / 1000);
+        if (dist > 0.0001) {
+          const inv = 1 / dist;
+          state.motion.dirX = state.motion.dirX * 0.8 + dx * inv * 0.2;
+          state.motion.dirY = state.motion.dirY * 0.8 + dy * inv * 0.2;
+        }
+        const threshold = 0.045 / sensitivity;
+        const gain = 4.8 * sensitivity;
+        const normalized = clamp((velocity - threshold) * gain, 0, 1.6);
+        state.motion.energy = state.motion.energy * 0.86 + normalized * 0.14;
+        const surge = Math.max(0, normalized - state.motion.energy * 0.78);
+        state.motion.burst = Math.max(state.motion.burst * 0.9, surge * 1.9);
+      }
+
+      state.motion.lastCenter = { x: center.x, y: center.y };
+      state.motion.lastPoseAt = now;
+    }
+
+    function lerpPoint(a, b, t) {
+      return {
+        x: a.x + (b.x - a.x) * t,
+        y: a.y + (b.y - a.y) * t
+      };
+    }
+
+    function offsetPoint(a, b, amount) {
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const len = Math.hypot(dx, dy) || 1;
+      return {
+        x: a.x - (dy / len) * amount,
+        y: a.y + (dx / len) * amount
+      };
+    }
+
+    function extendPoint(a, b, amount) {
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const len = Math.hypot(dx, dy) || 1;
+      return {
+        x: b.x + (dx / len) * amount,
+        y: b.y + (dy / len) * amount
+      };
+    }
+
+    function clonePoint(p) {
+      return p ? { x: p.x, y: p.y, vx: p.vx || 0, vy: p.vy || 0, speed: p.speed || 0 } : null;
+    }
+
+    function cloneGeom(geom) {
+      return {
+        ls: clonePoint(geom.ls),
+        rs: clonePoint(geom.rs),
+        lh: clonePoint(geom.lh),
+        rh: clonePoint(geom.rh),
+        le: clonePoint(geom.le),
+        re: clonePoint(geom.re),
+        lp: clonePoint(geom.lp),
+        rp: clonePoint(geom.rp),
+        lk: clonePoint(geom.lk),
+        rk: clonePoint(geom.rk),
+        la: clonePoint(geom.la),
+        ra: clonePoint(geom.ra),
+        headPoint: clonePoint(geom.headPoint),
+        pelvis: clonePoint(geom.pelvis),
+        torso: clonePoint(geom.torso)
+      };
+    }
+
+    function getMidPoint(a, b) {
+      if (a && b) return { x: (a.x + b.x) * 0.5, y: (a.y + b.y) * 0.5 };
+      return a || b || null;
+    }
+
+    function smoothPosePoint(key, point, now) {
+      if (!point) {
+        delete state.poseFlow.points[key];
+        return null;
+      }
+      const previous = state.poseFlow.points[key];
+      const dtMs = Math.max(16, state.poseFlow.lastAt ? now - state.poseFlow.lastAt : 33);
+      if (!previous) {
+        const seeded = { x: point.x, y: point.y, vx: 0, vy: 0, speed: 0 };
+        state.poseFlow.points[key] = seeded;
+        return { ...seeded };
+      }
+      const follow = 0.34;
+      const x = previous.x + (point.x - previous.x) * follow;
+      const y = previous.y + (point.y - previous.y) * follow;
+      const vx = (x - previous.x) / dtMs;
+      const vy = (y - previous.y) / dtMs;
+      const speed = Math.hypot(vx, vy);
+      const smoothed = { x, y, vx, vy, speed };
+      state.poseFlow.points[key] = smoothed;
+      return { ...smoothed };
+    }
+
+    function smoothPoseGeom(geom, now) {
+      const smoothed = {};
+      for (const key of ["ls", "rs", "lh", "rh", "le", "re", "lp", "rp", "lk", "rk", "la", "ra", "headPoint", "pelvis", "torso"]) {
+        smoothed[key] = smoothPosePoint(key, geom[key], now);
+      }
+      state.poseFlow.lastAt = now;
+      return smoothed;
+    }
+
+    function drawCapsule(g, a, b, width) {
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const angle = Math.atan2(dy, dx);
+      const length = Math.hypot(dx, dy);
+      g.save();
+      g.translate(a.x, a.y);
+      g.rotate(angle);
+      g.beginPath();
+      g.roundRect(0, -width / 2, length, width, width * 0.5);
+      g.fill();
+      g.restore();
+    }
+
+    function drawTaperedLimb(g, a, b, startWidth, endWidth, bendX = 0, bendY = 0) {
+      const mid = {
+        x: (a.x + b.x) * 0.5 + bendX,
+        y: (a.y + b.y) * 0.5 + bendY
+      };
+      const steps = 8;
+      const left = [];
+      const right = [];
+
+      for (let i = 0; i <= steps; i++) {
+        const t = i / steps;
+        const omt = 1 - t;
+        const px = omt * omt * a.x + 2 * omt * t * mid.x + t * t * b.x;
+        const py = omt * omt * a.y + 2 * omt * t * mid.y + t * t * b.y;
+        const tx = 2 * omt * (mid.x - a.x) + 2 * t * (b.x - mid.x);
+        const ty = 2 * omt * (mid.y - a.y) + 2 * t * (b.y - mid.y);
+        const len = Math.hypot(tx, ty) || 1;
+        const nx = -ty / len;
+        const ny = tx / len;
+        const width = startWidth + (endWidth - startWidth) * t;
+        left.push({ x: px + nx * width * 0.5, y: py + ny * width * 0.5 });
+        right.push({ x: px - nx * width * 0.5, y: py - ny * width * 0.5 });
+      }
+
+      g.beginPath();
+      g.moveTo(left[0].x, left[0].y);
+      for (let i = 1; i < left.length; i++) g.lineTo(left[i].x, left[i].y);
+      for (let i = right.length - 1; i >= 0; i--) g.lineTo(right[i].x, right[i].y);
+      g.closePath();
+      g.fill();
+    }
+
+    function drawFlameHead(g, hp, scalePx, opts = {}) {
+      const headMulX = opts.headMulX ?? 1;
+      const headMulY = opts.headMulY ?? 1;
+      const handFlareMul = opts.handFlareMul ?? 1;
+      const motionX = opts.motionX ?? 0;
+      const motionBurst = opts.motionBurst ?? 0;
+      const time = opts.time ?? 0;
+
+      const baseRx = scalePx * 0.115 * headMulX;
+      const baseRy = scalePx * 0.155 * headMulY;
+      const tipLift = scalePx * (0.26 + 0.08 * headMulY + motionBurst * 0.05);
+      const tipWiggleX = Math.sin(time * 0.006 + hp.y * 0.01) * scalePx * 0.014
+        + motionX * scalePx * (0.024 + motionBurst * 0.01);
+      const tipWiggleY = Math.cos(time * 0.0045 + hp.x * 0.008) * scalePx * 0.01;
+      const bottomY = hp.y + baseRy * 0.98;
+      const shoulderY = hp.y + baseRy * 0.16;
+      const cheekY = hp.y - baseRy * 0.26;
+      const tip = {
+        x: hp.x + tipWiggleX,
+        y: hp.y - tipLift + tipWiggleY
+      };
+      const leftBase = { x: hp.x - baseRx * 0.98, y: bottomY };
+      const rightBase = { x: hp.x + baseRx * 0.98, y: bottomY };
+      const leftShoulder = { x: hp.x - baseRx * 1.08, y: shoulderY };
+      const rightShoulder = { x: hp.x + baseRx * 1.08, y: shoulderY };
+      const leftCheek = { x: hp.x - baseRx * 0.68, y: cheekY };
+      const rightCheek = { x: hp.x + baseRx * 0.68, y: cheekY };
+      const tongueLiftMul = 1 + motionBurst * 0.08;
+      const leftTip = {
+        x: tip.x - baseRx * 0.36 + Math.sin(time * 0.0075 + 0.8) * scalePx * 0.016,
+        y: tip.y + baseRy * 0.15 - scalePx * 0.05 * tongueLiftMul
+      };
+      const centerTip = {
+        x: tip.x,
+        y: tip.y - scalePx * 0.045 * tongueLiftMul
+      };
+      const rightTip = {
+        x: tip.x + baseRx * 0.36 + Math.sin(time * 0.0075 + 2.1) * scalePx * 0.016,
+        y: tip.y + baseRy * 0.16 - scalePx * 0.045 * tongueLiftMul
+      };
+      const leftCrown = { x: hp.x - baseRx * 0.4, y: hp.y - baseRy * 0.68 };
+      const rightCrown = { x: hp.x + baseRx * 0.4, y: hp.y - baseRy * 0.68 };
+      const centerCrown = { x: hp.x, y: hp.y - baseRy * 0.84 };
+
+      g.beginPath();
+      g.moveTo(leftBase.x, leftBase.y);
+      g.bezierCurveTo(
+        leftBase.x - baseRx * 0.28,
+        hp.y + baseRy * 0.62,
+        leftShoulder.x - baseRx * 0.18,
+        shoulderY + baseRy * 0.1,
+        leftShoulder.x,
+        leftShoulder.y
+      );
+      g.bezierCurveTo(
+        leftCheek.x - baseRx * 0.24,
+        cheekY - baseRy * 0.08,
+        leftCrown.x - baseRx * 0.1,
+        leftCrown.y + baseRy * 0.08,
+        leftCrown.x,
+        leftCrown.y
+      );
+      g.bezierCurveTo(
+        leftCrown.x - baseRx * 0.14,
+        leftCrown.y - baseRy * 0.12,
+        leftTip.x - baseRx * (0.06 + handFlareMul * 0.02),
+        leftTip.y + baseRy * 0.16,
+        leftTip.x,
+        leftTip.y
+      );
+      g.bezierCurveTo(
+        leftTip.x + baseRx * 0.1,
+        leftTip.y + baseRy * 0.14,
+        centerCrown.x - baseRx * 0.16,
+        centerCrown.y + baseRy * 0.1,
+        centerCrown.x,
+        centerCrown.y
+      );
+      g.bezierCurveTo(
+        centerCrown.x - baseRx * 0.02,
+        centerCrown.y - baseRy * 0.16,
+        centerTip.x - baseRx * (0.05 + handFlareMul * 0.015),
+        centerTip.y + baseRy * 0.12,
+        centerTip.x,
+        centerTip.y
+      );
+      g.bezierCurveTo(
+        centerTip.x + baseRx * (0.05 + handFlareMul * 0.015),
+        centerTip.y + baseRy * 0.12,
+        centerCrown.x + baseRx * 0.16,
+        centerCrown.y + baseRy * 0.1,
+        rightCrown.x,
+        rightCrown.y
+      );
+      g.bezierCurveTo(
+        rightCrown.x + baseRx * 0.14,
+        rightCrown.y - baseRy * 0.12,
+        rightTip.x + baseRx * (0.06 + handFlareMul * 0.02),
+        rightTip.y + baseRy * 0.16,
+        rightTip.x,
+        rightTip.y
+      );
+      g.bezierCurveTo(
+        rightTip.x - baseRx * 0.1,
+        rightTip.y + baseRy * 0.14,
+        rightCrown.x + baseRx * 0.1,
+        rightCrown.y + baseRy * 0.08,
+        rightCrown.x,
+        rightCrown.y
+      );
+      g.bezierCurveTo(
+        rightCrown.x + baseRx * 0.1,
+        rightCrown.y + baseRy * 0.08,
+        rightCheek.x + baseRx * 0.24,
+        cheekY - baseRy * 0.08,
+        rightCheek.x,
+        rightCheek.y
+      );
+      g.bezierCurveTo(
+        rightShoulder.x + baseRx * 0.18,
+        shoulderY + baseRy * 0.1,
+        rightBase.x + baseRx * 0.28,
+        hp.y + baseRy * 0.62,
+        rightBase.x,
+        rightBase.y
+      );
+      g.quadraticCurveTo(hp.x, hp.y + baseRy * 1.18, leftBase.x, leftBase.y);
+      g.closePath();
+      g.fill();
+    }
+
+    function drawTorsoShape(g, ls, rs, lh, rh, scalePx, bootyMul = 1, bottomWidthMul = 1, fluidityMul = 1) {
+      const booty = clamp(bootyMul, 0.6, 2.2);
+      const bottomWidth = clamp(bottomWidthMul, 0.8, 2.4);
+      const fluidity = clamp(fluidityMul, 0.4, 2.4);
+      const neckL = lerpPoint(ls, rs, 0.16);
+      const neckR = lerpPoint(ls, rs, 0.84);
+      const waistL = offsetPoint(lerpPoint(ls, lh, 0.52), rs, scalePx * 0.045 * (0.9 + booty * 0.08 + bottomWidth * 0.08));
+      const waistR = offsetPoint(lerpPoint(rs, rh, 0.52), ls, -scalePx * 0.045 * (0.9 + booty * 0.08 + bottomWidth * 0.08));
+      const hipL = offsetPoint(lh, rh, scalePx * (0.05 + booty * 0.03 + bottomWidth * 0.05));
+      const hipR = offsetPoint(rh, lh, -scalePx * (0.05 + booty * 0.03 + bottomWidth * 0.05));
+      const gluteL = { x: hipL.x - scalePx * (0.005 + booty * 0.022 + bottomWidth * 0.03 + fluidity * 0.012), y: hipL.y + scalePx * (0.03 + booty * 0.04 + bottomWidth * 0.02 + fluidity * 0.014) };
+      const gluteR = { x: hipR.x + scalePx * (0.005 + booty * 0.022 + bottomWidth * 0.03 + fluidity * 0.012), y: hipR.y + scalePx * (0.03 + booty * 0.04 + bottomWidth * 0.02 + fluidity * 0.014) };
+
+      g.beginPath();
+      g.moveTo(neckL.x, neckL.y);
+      g.quadraticCurveTo(ls.x - scalePx * (0.12 + fluidity * 0.03), ls.y + scalePx * (0.1 + fluidity * 0.02), waistL.x, waistL.y);
+      g.bezierCurveTo(
+        waistL.x - scalePx * (0.09 + fluidity * 0.03), waistL.y + scalePx * (0.08 + fluidity * 0.025),
+        lh.x - scalePx * (0.16 + fluidity * 0.05), lh.y + scalePx * (0.03 + fluidity * 0.02),
+        gluteL.x, gluteL.y
+      );
+      g.quadraticCurveTo((lh.x + rh.x) * 0.5, Math.max(gluteL.y, gluteR.y) + scalePx * (0.05 + fluidity * 0.03), gluteR.x, gluteR.y);
+      g.bezierCurveTo(
+        rh.x + scalePx * (0.16 + fluidity * 0.05), rh.y + scalePx * (0.03 + fluidity * 0.02),
+        waistR.x + scalePx * (0.09 + fluidity * 0.03), waistR.y + scalePx * (0.08 + fluidity * 0.025),
+        waistR.x, waistR.y
+      );
+      g.quadraticCurveTo(rs.x + scalePx * (0.12 + fluidity * 0.03), rs.y + scalePx * (0.1 + fluidity * 0.02), neckR.x, neckR.y);
+      g.quadraticCurveTo((ls.x + rs.x) * 0.5, Math.min(ls.y, rs.y) - scalePx * (0.05 + fluidity * 0.025), neckL.x, neckL.y);
+      g.closePath();
+      g.fill();
+    }
+
+    function getHeadPoint(landmarks) {
+      const nose = averagePoint(landmarks, [0]);
+      const ears = averagePoint(landmarks, [7, 8]);
+      const eyes = averagePoint(landmarks, [2, 5]);
+      if (nose.ok) return { x: (1 - nose.x) * window.innerWidth, y: nose.y * window.innerHeight, source: "nose" };
+      if (eyes.ok) return { x: (1 - eyes.x) * window.innerWidth, y: eyes.y * window.innerHeight, source: "eyes" };
+      if (ears.ok) return { x: (1 - ears.x) * window.innerWidth, y: ears.y * window.innerHeight, source: "ears" };
+      return null;
+    }
+
+    function drawFigureToCtx(g, geom, scalePx, opts = {}) {
+      const torsoMul = opts.torsoMul ?? 1;
+      const shoulderMul = opts.shoulderMul ?? 1;
+      const upperArmMul = opts.upperArmMul ?? 1;
+      const forearmMul = opts.forearmMul ?? 1;
+      const upperLegMul = opts.upperLegMul ?? 1;
+      const lowerLegMul = opts.lowerLegMul ?? 1;
+      const jointMul = opts.jointMul ?? 1;
+      const neckMul = opts.neckMul ?? 1;
+      const headMulX = opts.headMulX ?? 1;
+      const headMulY = opts.headMulY ?? 1;
+      const headLift = opts.headLift ?? 0;
+      const handMul = opts.handMul ?? 1;
+      const handFlareMul = opts.handFlareMul ?? 1;
+      const footMul = opts.footMul ?? 1;
+      const bootyMul = opts.bootyMul ?? 1;
+      const bottomWidthMul = opts.bottomWidthMul ?? 1;
+      const fluidityMul = opts.fluidityMul ?? 1;
+      const bendX = opts.bendX ?? 0;
+      const bendY = opts.bendY ?? 0;
+      const motionBurst = opts.motionBurst ?? 0;
+      const time = opts.time ?? 0;
+
+      const { ls, rs, lh, rh, le, re, lp, rp, lk, rk, la, ra, headPoint } = geom;
+
+      if (ls && rs && lh && rh) {
+        drawTorsoShape(g, ls, rs, lh, rh, scalePx * torsoMul, bootyMul, bottomWidthMul, fluidityMul);
+      }
+
+      const armBendX = bendX * 1.2 * fluidityMul;
+      const armBendY = bendY * 1.35 * fluidityMul;
+      const legBendX = bendX * 0.6 * fluidityMul;
+      const legBendY = bendY * 0.7 * fluidityMul;
+      const shoulderBridge = ls && rs ? getMidPoint(ls, rs) : null;
+      const leftShoulderCore = ls && shoulderBridge ? lerpPoint(ls, shoulderBridge, 0.28) : ls;
+      const rightShoulderCore = rs && shoulderBridge ? lerpPoint(rs, shoulderBridge, 0.28) : rs;
+      const leftArmRoot = leftShoulderCore ? { x: leftShoulderCore.x, y: leftShoulderCore.y + scalePx * 0.04 } : null;
+      const rightArmRoot = rightShoulderCore ? { x: rightShoulderCore.x, y: rightShoulderCore.y + scalePx * 0.04 } : null;
+
+      if (leftArmRoot && le) drawTaperedLimb(g, leftArmRoot, le, scalePx * 0.22 * shoulderMul, scalePx * 0.14 * upperArmMul, armBendX, armBendY);
+      if (le && lp) drawTaperedLimb(g, le, lp, scalePx * 0.14 * upperArmMul, scalePx * 0.115 * forearmMul, armBendX * 1.3, armBendY * 1.45);
+      if (rightArmRoot && re) drawTaperedLimb(g, rightArmRoot, re, scalePx * 0.22 * shoulderMul, scalePx * 0.14 * upperArmMul, armBendX, armBendY);
+      if (re && rp) drawTaperedLimb(g, re, rp, scalePx * 0.14 * upperArmMul, scalePx * 0.115 * forearmMul, armBendX * 1.3, armBendY * 1.45);
+      if (lh && lk) drawTaperedLimb(g, lh, lk, scalePx * 0.285 * upperLegMul, scalePx * 0.2 * lowerLegMul, legBendX, legBendY);
+      if (lk && la) drawTaperedLimb(g, lk, la, scalePx * 0.18 * lowerLegMul, scalePx * 0.12 * footMul, legBendX * 0.8, legBendY * 0.9);
+      if (rh && rk) drawTaperedLimb(g, rh, rk, scalePx * 0.285 * upperLegMul, scalePx * 0.2 * lowerLegMul, legBendX, legBendY);
+      if (rk && ra) drawTaperedLimb(g, rk, ra, scalePx * 0.18 * lowerLegMul, scalePx * 0.12 * footMul, legBendX * 0.8, legBendY * 0.9);
+
+      const masses = [
+        [leftArmRoot, scalePx * 0.095 * jointMul], [rightArmRoot, scalePx * 0.095 * jointMul],
+        [le, scalePx * 0.068 * jointMul], [re, scalePx * 0.068 * jointMul],
+        [lh, scalePx * 0.13 * jointMul], [rh, scalePx * 0.13 * jointMul],
+        [lk, scalePx * 0.082 * jointMul], [rk, scalePx * 0.082 * jointMul]
+      ];
+
+      for (const [p, r] of masses) {
+        if (!p) continue;
+        g.beginPath();
+        g.arc(p.x, p.y, r, 0, Math.PI * 2);
+        g.fill();
+      }
+
+      if (headPoint) {
+        const hp = { x: headPoint.x, y: headPoint.y - scalePx * headLift };
+        const neckBase = ls && rs
+          ? { x: (ls.x + rs.x) * 0.5, y: (ls.y + rs.y) * 0.5 }
+          : { x: hp.x, y: hp.y + scalePx * 0.18 };
+        drawCapsule(g, neckBase, { x: hp.x, y: hp.y + scalePx * 0.02 }, scalePx * 0.11 * neckMul);
+        drawFlameHead(g, hp, scalePx, {
+          headMulX,
+          headMulY,
+          handFlareMul,
+          motionX: bendX / Math.max(1, scalePx),
+          motionBurst,
+          time
+        });
+      }
+
+      for (const hand of [lp, rp]) {
+        if (!hand) continue;
+        g.beginPath();
+        g.ellipse(hand.x, hand.y, scalePx * 0.085 * handMul, scalePx * 0.06 * handMul, 0, 0, Math.PI * 2);
+        g.fill();
+        g.beginPath();
+        g.moveTo(hand.x - scalePx * 0.055 * handMul, hand.y + scalePx * 0.01);
+        g.quadraticCurveTo(hand.x, hand.y - scalePx * 0.11 * handFlareMul, hand.x + scalePx * 0.055 * handMul, hand.y + scalePx * 0.01);
+        g.quadraticCurveTo(hand.x, hand.y - scalePx * 0.03 * handFlareMul, hand.x - scalePx * 0.055 * handMul, hand.y + scalePx * 0.01);
+        g.closePath();
+        g.fill();
+      }
+
+      for (const foot of [la, ra]) {
+        if (!foot) continue;
+        g.beginPath();
+        g.ellipse(foot.x, foot.y + scalePx * 0.015, scalePx * 0.075 * footMul, scalePx * 0.04 * footMul, 0, 0, Math.PI * 2);
+        g.fill();
+      }
+    }
+
+    function renderFlameLayer(targetCtx, geom, scalePx, layer) {
+      targetCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      targetCtx.save();
+      targetCtx.filter = layer.blur > 0.35 ? `blur(${layer.blur}px)` : "none";
+      targetCtx.globalAlpha = layer.alpha;
+      targetCtx.fillStyle = "rgba(255,255,255,1)";
+      drawFigureToCtx(targetCtx, geom, scalePx, layer.shape);
+      targetCtx.globalCompositeOperation = "source-in";
+      targetCtx.fillStyle = layer.color;
+      targetCtx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+      targetCtx.restore();
+    }
+
+    function drawFlameLayerInto(targetCtx, geom, scalePx, layer) {
+      if (!layer || layer.alpha <= 0) return;
+      targetCtx.save();
+      targetCtx.filter = "none";
+      targetCtx.globalAlpha = layer.alpha;
+      targetCtx.fillStyle = layer.color;
+      drawFigureToCtx(targetCtx, geom, scalePx, layer.shape);
+      targetCtx.restore();
+    }
+
+    function renderFlattenedFlame(layers, now, motionOptions) {
+      const { geom, scalePx, motionBurst = 0, motionEnergy = 0, rippleSize = 1, qualityScale = 1 } = motionOptions;
+      flameCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      for (const layer of layers) {
+        drawFlameLayerInto(flameCtx, geom, scalePx, layer);
+      }
+      const sharedBlur = Math.max(...layers.map(layer => layer.blur));
+
+      ctx.save();
+      ctx.globalCompositeOperation = "color-dodge";
+      ctx.globalAlpha = 0.72 + motionBurst * 0.1;
+      ctx.filter = sharedBlur > 0.35 ? `blur(${sharedBlur}px)` : "none";
+      ctx.drawImage(flameCanvas, 0, 0);
+      ctx.restore();
+
+      ctx.save();
+      ctx.globalCompositeOperation = "screen";
+      ctx.globalAlpha = 0.82;
+      ctx.filter = "none";
+      ctx.drawImage(flameCanvas, 0, 0);
+      ctx.restore();
+
+      if (state.perfToggles.glowHeat) {
+        drawHeatLayer(flameCanvas, now, {
+          alpha: 0.64 + motionBurst * 0.08,
+          strip: Math.max(16, Math.round(22 / qualityScale)),
+          calmAmpX: (0.34 + motionEnergy * 0.36) * rippleSize * qualityScale,
+          burstAmpX: (7 + motionBurst * 6) * rippleSize * qualityScale,
+          calmAmpY: 0.025,
+          burstAmpY: 0.48 * rippleSize * qualityScale,
+          calmSpeed: 0.00028,
+          burstSpeed: 0.00145,
+          burst: motionBurst,
+          seed: 1.4,
+          composite: "screen"
+        });
+      }
+    }
+
+    function compositeLayerFast(source, alpha = 1, composite = "lighter") {
+      ctx.save();
+      ctx.globalCompositeOperation = composite;
+      ctx.globalAlpha = alpha;
+      ctx.drawImage(source, 0, 0);
+      ctx.restore();
+    }
+
+    function drawGhostSilhouette(snapshot, now, alpha, seed) {
+      const age = now - snapshot.at;
+      const t = clamp((age - 90) / 260, 0, 1);
+      const r = Math.round(255);
+      const g = Math.round(110 + t * 120);
+      const b = Math.round(28 + t * 120);
+      const blur = 16 + t * 10;
+      renderFlameLayer(flameCtx, snapshot.geom, snapshot.scalePx, {
+        blur,
+        alpha,
+        color: `rgba(${r}, ${g}, ${b}, ${0.48 - t * 0.14})`,
+        shape: snapshot.shape
+      });
+      drawHeatLayer(flameCanvas, now, {
+        alpha: alpha * (1 - t * 0.15),
+        strip: 14,
+        calmAmpX: 0.2,
+        burstAmpX: 4.8,
+        calmAmpY: 0.02,
+        burstAmpY: 0.28,
+        calmSpeed: 0.00022,
+        burstSpeed: 0.0011,
+        burst: 0.4,
+        seed,
+        composite: "lighter"
+      });
+    }
+
+    function getDelayedGhost(minAgeMs, now) {
+      for (let i = state.ghostFrames.length - 1; i >= 0; i--) {
+        const frame = state.ghostFrames[i];
+        if (now - frame.at > minAgeMs) return frame;
+      }
+      return null;
+    }
+
+    function buildLayerConfig(base, control, flicker = 0) {
+      const size = clamp(control.size, 0.35, 1.8);
+      const intensity = clamp(control.intensity, 0, 1.8);
+      const blurControl = clamp(state.blurControl, 0, 5);
+      const qualityBlurScale = [0.05, 0.08, 0.32, 1][state.quality.level];
+      const alpha = clamp(base.alpha * intensity + flicker, 0, 1);
+      return {
+        blur: Math.max(0, base.blur * (0.9 + size * 0.1) * blurControl * qualityBlurScale),
+        alpha,
+        color: base.color,
+        shape: scaleShape(base.shape, size)
+      };
+    }
+
+    function getBandDrive(name) {
+      const level = state.audioBands[name] || 0;
+      const peak = state.audioPeaks[name] || 0;
+      const onset = state.audioOnsets[name] || 0;
+      const control = state.bandControls[name];
+      const pulse = clamp(level * 0.28 + peak * 0.8 + onset * (2.2 * control.reactivity), 0, 1.8);
+      return {
+        level,
+        peak,
+        onset,
+        pulse,
+        intensity: control.intensity,
+        reactivity: control.reactivity
+      };
+    }
+
+    function emitBandParticles(center, emitters) {
+      const sparkSpeed = clamp(state.sparkControls.speed, 0.5, 2.5);
+      const sparkTravel = clamp(state.sparkControls.travel, 0.5, 2.6);
+      const sparkSize = clamp(state.sparkControls.size, 0.5, 2.2);
+      const sparkDensity = clamp(state.sparkControls.density, 0.4, 2.4);
+      const bandSpecs = [
+        { key: "bass", color: "#ff2b1c", threshold: 0.06, baseBurst: 3, burstScale: 22, sizeMin: 4.2, sizeMax: 9.5, speedMin: 2.8, speedMax: 5.6, spreadMul: 1.15, lifeMin: 32, lifeMax: 58 },
+        { key: "midlow", color: "#ff8a1c", threshold: 0.045, baseBurst: 2, burstScale: 18, sizeMin: 3.6, sizeMax: 7.6, speedMin: 2.5, speedMax: 4.9, spreadMul: 1.02, lifeMin: 28, lifeMax: 50 },
+        { key: "midhigh", color: "#ffd34a", threshold: 0.038, baseBurst: 2, burstScale: 15, sizeMin: 2.8, sizeMax: 6.3, speedMin: 2.2, speedMax: 4.2, spreadMul: 0.94, lifeMin: 24, lifeMax: 42 },
+        { key: "high", color: "#fff8f0", threshold: 0.03, baseBurst: 1, burstScale: 13, sizeMin: 2.2, sizeMax: 5.4, speedMin: 2.0, speedMax: 3.8, spreadMul: 0.88, lifeMin: 20, lifeMax: 36 }
+      ];
+
+      for (const band of bandSpecs) {
+        const drive = getBandDrive(band.key);
+        const level = drive.level;
+        const onset = drive.onset;
+        const trigger = onset * (2.8 * drive.reactivity) + drive.peak * 0.45;
+        const cooldown = state.sparkCooldowns[band.key] || 0;
+        if (cooldown > 0) {
+          state.sparkCooldowns[band.key] = Math.max(0, cooldown - 1);
+        }
+        if (trigger < band.threshold || cooldown > 0) continue;
+
+        state.sparkCooldowns[band.key] = Math.max(2, Math.round(10 - Math.min(6, drive.reactivity * 2)));
+        const burstCount = Math.min(52, Math.round((band.baseBurst + trigger * band.burstScale) * sparkDensity));
+        for (const emitter of emitters) {
+          if (!emitter) continue;
+          const emitterBurst = Math.max(1, Math.round(burstCount * emitter.weight));
+          for (let i = 0; i < emitterBurst; i++) {
+            state.embers.push({
+              x: emitter.x + (Math.random() - 0.5) * emitter.spread * band.spreadMul,
+              y: emitter.y - emitter.lift + (Math.random() - 0.5) * 8,
+              vx: (Math.random() - 0.5) * (2.6 + trigger * 6.4) * sparkSpeed,
+              vy: -(band.speedMin + Math.random() * (band.speedMax - band.speedMin) + trigger * 3.4) * sparkSpeed,
+              life: (band.lifeMin + Math.random() * (band.lifeMax - band.lifeMin)) * sparkTravel,
+              age: 0,
+              size: (band.sizeMin + Math.random() * (band.sizeMax - band.sizeMin) + trigger * 2.2) * sparkSize,
+              alpha: clamp(0.45 + level * 0.85 + Math.random() * 0.18, 0, 1),
+              color: band.color
+            });
+          }
+        }
+
+        if (center.ok && trigger > band.threshold * 1.35) {
+          const centerBurst = Math.max(1, Math.round(trigger * 4));
+          for (let i = 0; i < centerBurst; i++) {
+            state.embers.push({
+              x: (1 - center.x) * window.innerWidth + (Math.random() - 0.5) * 90,
+              y: center.y * window.innerHeight + (Math.random() - 0.5) * 60,
+              vx: (Math.random() - 0.5) * (3.2 + trigger * 6.8) * sparkSpeed,
+              vy: -(band.speedMin * 0.8 + Math.random() * 2.4 + trigger * 2.8) * sparkSpeed,
+              life: (band.lifeMin + Math.random() * (band.lifeMax - band.lifeMin)) * sparkTravel,
+              age: 0,
+              size: (band.sizeMin + Math.random() * (band.sizeMax - band.sizeMin)) * sparkSize,
+              alpha: clamp(0.35 + level * 0.65, 0, 1),
+              color: band.color
+            });
+          }
+        }
+      }
+
+      const maxParticles = Math.round(420 * sparkDensity);
+      if (state.embers.length > maxParticles) {
+        state.embers.splice(0, state.embers.length - maxParticles);
+      }
+    }
+
+    function drawEmbers(dt) {
+      ctx.save();
+      ctx.globalCompositeOperation = "color-dodge";
+      for (let i = state.embers.length - 1; i >= 0; i--) {
+        const e = state.embers[i];
+        e.age += dt * 60;
+        if (e.age >= e.life) {
+          state.embers.splice(i, 1);
+          continue;
+        }
+
+        e.x += e.vx * 60 * dt;
+        e.y += e.vy * 60 * dt;
+        e.vx *= 0.994;
+        e.vy -= 0.0012;
+        const t = e.age / e.life;
+        const alpha = e.alpha * (1 - t);
+        const radius = e.size * (1 - t * 0.34);
+
+        ctx.fillStyle = e.color.startsWith("#")
+          ? `${e.color}${Math.round(clamp(alpha, 0, 1) * 255).toString(16).padStart(2, "0")}`
+          : e.color;
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function triggerBootyPointBurst(now) {
+      const originX = window.innerWidth - 74;
+      const originY = window.innerHeight * 0.5 + (Math.random() - 0.5) * window.innerHeight * 0.22;
+      state.bootyBursts.push({
+        x: originX,
+        y: originY,
+        startY: originY,
+        age: 0,
+        life: 32,
+        size: 28,
+        color: "#fff1b8",
+        text: "+1"
+      });
+    }
+
+    function drawBootyPointBursts(dt) {
+      if (!state.bootyBursts.length) return;
+      ctx.save();
+      ctx.globalCompositeOperation = "source-over";
+      for (let i = state.bootyBursts.length - 1; i >= 0; i--) {
+        const p = state.bootyBursts[i];
+        p.age += dt * 60;
+        if (p.age >= p.life) {
+          state.bootyBursts.splice(i, 1);
+          continue;
+        }
+
+        const t = p.age / p.life;
+        const alpha = t < 0.2 ? t / 0.2 : 1 - (t - 0.2) / 0.8;
+        const scale = 0.92 + t * 0.16;
+        p.y = p.startY - t * 18;
+
+        ctx.globalAlpha = alpha;
+        ctx.shadowBlur = 0;
+        ctx.font = `900 ${Math.round(p.size * scale)}px "Trebuchet MS", "Segoe UI", sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.lineWidth = Math.max(3, p.size * 0.1);
+        ctx.strokeStyle = "rgba(36, 4, 0, 0.72)";
+        ctx.fillStyle = p.color;
+        ctx.strokeText(p.text, p.x, p.y);
+        ctx.fillText(p.text, p.x, p.y);
+      }
+      ctx.restore();
+      ctx.globalAlpha = 1;
+    }
+
+    function loadWinningImages() {
+      const urls = state.bootyCounterConfig.winningImageUrls?.length
+        ? state.bootyCounterConfig.winningImageUrls
+        : [state.bootyCounterConfig.winningImageUrl].filter(Boolean);
+      if (!urls.length || state.winningImages.length) return;
+      state.winningImages = urls.map(url => {
+        const image = new Image();
+        const entry = { image, ready: false, url };
+        image.onload = () => {
+          entry.ready = true;
+        };
+        image.onerror = () => {
+          entry.ready = false;
+        };
+        image.src = url;
+        return entry;
+      });
+    }
+
+    function randomFireColor() {
+      return FIREWORK_COLORS[Math.floor(Math.random() * FIREWORK_COLORS.length)];
+    }
+
+    function triggerWinningAnimation(now, preview = false) {
+      loadWinningImages();
+      state.lastWinAt = now;
+      const poseActive = state.poseConfidence > 0.25;
+      const burstCount = preview ? 4 : poseActive ? 4 : 9;
+      const winningText = state.bootyCounterConfig.winningText || "You win! Nice butt";
+      const textCount = 1;
+      const imageDelayFrames = 120;
+      for (let i = 0; i < textCount; i++) {
+        state.winningBursts.push({
+          x: window.innerWidth * 0.5,
+          y: window.innerHeight * 0.48,
+          vx: 0,
+          vy: 0,
+          age: 0,
+          delay: 0,
+          life: imageDelayFrames,
+          size: 42,
+          spin: 0,
+          rotation: 0,
+          color: "#fff1b8",
+          text: winningText
+        });
+      }
+      for (let b = 0; b < burstCount; b++) {
+        const originX = window.innerWidth * (0.2 + Math.random() * 0.6);
+        const originY = window.innerHeight * (0.28 + Math.random() * 0.42);
+        const particleCount = poseActive ? 16 + Math.floor(Math.random() * 10) : 34 + Math.floor(Math.random() * 22);
+        for (let i = 0; i < particleCount; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = 2.4 + Math.random() * 6.2;
+          const stamp = i % (poseActive ? 10 : 7) === 0;
+          state.winningBursts.push({
+            x: originX,
+            y: originY,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed - Math.random() * 1.7,
+            age: 0,
+            delay: imageDelayFrames,
+            life: 240,
+            size: stamp ? 40 + Math.random() * 56 : 2.8 + Math.random() * 7.4,
+            spin: (Math.random() - 0.5) * 0.08,
+            rotation: Math.random() * Math.PI * 2,
+            color: randomFireColor(),
+            stamp,
+            imageIndex: stamp && state.winningImages.length ? Math.floor(Math.random() * state.winningImages.length) : -1
+          });
+        }
+      }
+    }
+
+    function drawTintedWinningImage(particle, alpha, scale) {
+      const entry = state.winningImages[particle.imageIndex] || state.winningImages.find(item => item.ready);
+      const image = entry?.image;
+      if (!entry?.ready || !image) return false;
+      const size = Math.max(1, particle.size * scale);
+      winningTintCanvas.width = Math.ceil(size);
+      winningTintCanvas.height = Math.ceil(size);
+      winningTintCtx.clearRect(0, 0, winningTintCanvas.width, winningTintCanvas.height);
+      winningTintCtx.drawImage(image, 0, 0, winningTintCanvas.width, winningTintCanvas.height);
+      winningTintCtx.globalCompositeOperation = "source-in";
+      winningTintCtx.fillStyle = particle.color;
+      winningTintCtx.fillRect(0, 0, winningTintCanvas.width, winningTintCanvas.height);
+      winningTintCtx.globalCompositeOperation = "source-over";
+      ctx.save();
+      ctx.translate(particle.x, particle.y);
+      ctx.rotate(particle.rotation);
+      ctx.globalAlpha = alpha;
+      ctx.drawImage(winningTintCanvas, -size * 0.5, -size * 0.5, size, size);
+      ctx.restore();
+      return true;
+    }
+
+    function drawWinningText(particle, alpha, scale) {
+      ctx.save();
+      ctx.translate(particle.x, particle.y);
+      ctx.globalCompositeOperation = "source-over";
+      ctx.globalAlpha = alpha;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.font = `900 ${Math.round(particle.size * scale)}px "Trebuchet MS", "Segoe UI", sans-serif`;
+      ctx.fillStyle = particle.color;
+      ctx.shadowBlur = 0;
+      ctx.fillText(particle.text, 0, 0);
+      ctx.restore();
+    }
+
+    function drawWinningAnimation(dt) {
+      if (!state.winningBursts.length) return;
+      ctx.save();
+      ctx.globalCompositeOperation = "lighter";
+      for (let i = state.winningBursts.length - 1; i >= 0; i--) {
+        const p = state.winningBursts[i];
+        if (p.delay > 0) {
+          p.delay -= dt * 60;
+          continue;
+        }
+        p.age += dt * 60;
+        if (p.age >= p.life) {
+          state.winningBursts.splice(i, 1);
+          continue;
+        }
+
+        if (!p.text) {
+          p.x += p.vx * 60 * dt;
+          p.y += p.vy * 60 * dt;
+          p.vx *= 0.985;
+          p.vy = p.vy * 0.985 + 0.055;
+          p.rotation += p.spin * 60 * dt;
+        }
+        const t = p.age / p.life;
+        const alpha = p.text
+          ? (t < 0.18 ? t / 0.18 : Math.max(0, 1 - (t - 0.18) / 0.82))
+          : (1 - t) * (p.stamp ? 0.78 : 0.95);
+        const scale = p.text ? 0.98 + t * 0.08 : p.stamp ? 0.45 + t * 1.85 : 1 - t * 0.2;
+
+        if (p.text) {
+          drawWinningText(p, alpha, scale);
+          continue;
+        }
+        if (p.stamp && drawTintedWinningImage(p, alpha, scale)) continue;
+
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size * scale, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+      ctx.globalAlpha = 1;
+    }
+
+    function drawHeatLayer(source, now, options) {
+      const {
+        alpha = 1,
+        strip = 16,
+        calmAmpX = 1,
+        burstAmpX = 8,
+        calmAmpY = 0.08,
+        burstAmpY = 0.8,
+        calmSpeed = 0.00035,
+        burstSpeed = 0.0028,
+        burst = 0,
+        seed = 0,
+        composite = "lighter"
+      } = options;
+
+      ctx.save();
+      ctx.globalCompositeOperation = composite;
+      ctx.globalAlpha = alpha;
+
+      for (let y = 0; y < window.innerHeight; y += strip) {
+        const h = Math.min(strip, window.innerHeight - y);
+        const yNorm = 1 - y / Math.max(1, window.innerHeight);
+        const heightBias = Math.pow(yNorm, 1.65);
+        const gust = clamp(burst, 0, 1.8);
+        const time = now * (calmSpeed + burstSpeed * gust);
+        const ampX = (calmAmpX + burstAmpX * gust) * heightBias;
+        const ampY = (calmAmpY + burstAmpY * gust) * heightBias;
+
+        const flowA = Math.sin(y * (0.011 + seed * 0.0007) + time * (1.1 + seed * 0.08));
+        const flowB = Math.sin(y * (0.021 + seed * 0.0005) - time * (0.72 + seed * 0.05) + 1.7);
+        const flowC = Math.cos(y * (0.037 + seed * 0.0003) + time * (1.85 + seed * 0.09) + 0.9);
+        const drift = flowA * 0.52 + flowB * 0.33 + flowC * 0.15;
+        const curl = Math.cos(y * (0.016 + seed * 0.0004) - time * (1.35 + seed * 0.04) + 2.2) * 0.6
+          + Math.sin(y * (0.029 + seed * 0.0002) + time * (0.95 + seed * 0.06)) * 0.4;
+
+        const dx = drift * ampX;
+        const dy = curl * ampY;
+        ctx.drawImage(source, 0, y, window.innerWidth, h, dx, y + dy, window.innerWidth, h);
+      }
+
+      ctx.restore();
+    }
+
+    function drawFlameTongues(origin, now, options) {
+      if (!origin) return;
+      const {
+        color = "rgba(255, 220, 120, 0.5)",
+        count = 3,
+        length = 70,
+        bendX = 0,
+        bendY = -1,
+        spread = 0.65,
+        alpha = 0.4
+      } = options;
+
+      ctx.save();
+      ctx.globalCompositeOperation = "lighter";
+      ctx.strokeStyle = color;
+      ctx.lineCap = "round";
+      for (let i = 0; i < count; i++) {
+        const phase = now * 0.0022 + i * 1.37;
+        const sx = bendX + Math.sin(phase * 1.7) * spread;
+        const sy = bendY - 0.35 - Math.abs(Math.cos(phase)) * 0.4;
+        const len1 = length * (0.72 + Math.sin(phase * 0.7) * 0.08);
+        const len2 = length * (1 + Math.cos(phase * 0.9) * 0.1);
+        const ctrl1 = {
+          x: origin.x + sx * len1 * 0.42,
+          y: origin.y + sy * len1 * 0.46
+        };
+        const tip = {
+          x: origin.x + sx * len2,
+          y: origin.y + sy * len2
+        };
+        ctx.globalAlpha = alpha * (1 - i * 0.14);
+        ctx.lineWidth = Math.max(1.2, 6 - i * 1.2);
+        ctx.beginPath();
+        ctx.moveTo(origin.x, origin.y);
+        ctx.quadraticCurveTo(ctrl1.x, ctrl1.y, tip.x, tip.y);
+        ctx.stroke();
+
+        if (i < count - 1) {
+          ctx.lineWidth = Math.max(1, 3.2 - i * 0.7);
+          ctx.beginPath();
+          ctx.moveTo(ctrl1.x, ctrl1.y);
+          ctx.quadraticCurveTo(
+            ctrl1.x + spread * len1 * 0.12,
+            ctrl1.y - len1 * 0.16,
+            tip.x + spread * len1 * 0.1,
+            tip.y - len1 * 0.12
+          );
+          ctx.stroke();
+        }
+      }
+      ctx.restore();
+    }
+
+    function drawHotCoreSpot(origin, radius, color, alpha) {
+      if (!origin || radius <= 0 || alpha <= 0) return;
+      const gradient = ctx.createRadialGradient(origin.x, origin.y, 0, origin.x, origin.y, radius);
+      gradient.addColorStop(0, color);
+      gradient.addColorStop(0.42, "rgba(255, 190, 72, 0.32)");
+      gradient.addColorStop(1, "rgba(255, 80, 0, 0)");
+      ctx.save();
+      ctx.globalCompositeOperation = "color-dodge";
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(origin.x, origin.y, radius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawSelectiveHotCores(geom, scalePx, drives, now) {
+      const realismScale = [0, 0.35, 0.68, 1][state.quality.level];
+      if (realismScale <= 0) return;
+      const bassPulse = drives.bass.pulse || 0;
+      const highPulse = drives.high.pulse || 0;
+      const bootyTravel = state.bootyCounter.snapshot(now).travel;
+      const pelvisHeat = clamp(0.45 + bassPulse * 0.32 + bootyTravel * 8, 0.35, 1.2);
+      drawHotCoreSpot(geom.torso, scalePx * (0.24 + drives.midlow.pulse * 0.04) * realismScale, "rgba(255, 245, 220, 0.86)", 0.58 * realismScale);
+      drawHotCoreSpot(geom.pelvis, scalePx * (0.2 + bassPulse * 0.06) * realismScale, "rgba(255, 226, 112, 0.9)", pelvisHeat * realismScale);
+      if (state.quality.level >= 2) drawHotCoreSpot(geom.headPoint, scalePx * (0.13 + highPulse * 0.03), "rgba(255, 248, 238, 0.82)", (0.42 + highPulse * 0.12) * realismScale);
+      if (state.quality.level >= 3) {
+        for (const hand of [geom.lp, geom.rp]) drawHotCoreSpot(hand, scalePx * 0.08, "rgba(255, 238, 180, 0.72)", 0.36 + highPulse * 0.1);
+      }
+    }
+
+    function drawVelocityFlameLicks(geom, scalePx, now, motionBurst) {
+      const realismScale = [0, 0.34, 0.66, 1][state.quality.level];
+      if (realismScale <= 0) return;
+      const points = [
+        { point: geom.headPoint, base: 0.15, count: 2, spread: 0.42, color: "rgba(255, 244, 200, 0.3)" },
+        { point: geom.lp, base: 0.11, count: 1, spread: 0.48, color: "rgba(255, 190, 70, 0.24)" },
+        { point: geom.rp, base: 0.11, count: 1, spread: 0.48, color: "rgba(255, 190, 70, 0.24)" }
+      ];
+      if (state.quality.level >= 3) {
+        points.push(
+          { point: geom.la, base: 0.08, count: 1, spread: 0.34, color: "rgba(255, 118, 30, 0.18)" },
+          { point: geom.ra, base: 0.08, count: 1, spread: 0.34, color: "rgba(255, 118, 30, 0.18)" }
+        );
+      }
+      for (const item of points) {
+        const p = item.point;
+        if (!p) continue;
+        const speed = clamp((p.speed || 0) * 90, 0, 1.1) * realismScale;
+        const lagX = clamp(-(p.vx || 0) * 26, -0.72, 0.72);
+        const lift = -0.9 - speed * 0.24 - motionBurst * 0.08;
+        drawFlameTongues(p, now, {
+          color: item.color,
+          count: Math.max(1, Math.round((item.count + speed) * realismScale)),
+          length: scalePx * (item.base + speed * 0.08 + motionBurst * 0.025),
+          bendX: lagX,
+          bendY: lift,
+          spread: item.spread,
+          alpha: 0.22 + speed * 0.14
+        });
+      }
+      if (geom.pelvis) {
+        const bootyTravel = state.bootyCounter.snapshot(now).travel;
+        drawFlameTongues({ x: geom.pelvis.x, y: geom.pelvis.y + scalePx * 0.04 }, now, {
+          color: "rgba(255, 96, 18, 0.3)",
+          count: Math.max(1, Math.round((1 + bootyTravel * 42 + motionBurst) * realismScale)),
+          length: scalePx * (0.12 + bootyTravel * 2.2 + motionBurst * 0.03),
+          bendX: clamp(-(geom.pelvis.vx || 0) * 30, -0.8, 0.8),
+          bendY: -0.72,
+          spread: 0.72,
+          alpha: clamp(0.24 + bootyTravel * 5, 0.24, 0.62)
+        });
+      }
+    }
+
+    function drawInsetMask(targetCtx, source, insetX, insetTop, insetBottom, blurPx, alpha) {
+      targetCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      const destW = Math.max(1, window.innerWidth - insetX * 2);
+      const destH = Math.max(1, window.innerHeight - insetTop - insetBottom);
+      const destX = insetX;
+      const destY = window.innerHeight - destH;
+
+      targetCtx.save();
+      targetCtx.filter = `blur(${blurPx}px)`;
+      targetCtx.globalAlpha = alpha;
+      targetCtx.drawImage(source, destX, destY, destW, destH);
+      targetCtx.restore();
+    }
+
+    function rotateMerkabaPoint(point, ax, ay, az) {
+      const cosX = Math.cos(ax);
+      const sinX = Math.sin(ax);
+      const cosY = Math.cos(ay);
+      const sinY = Math.sin(ay);
+      const cosZ = Math.cos(az);
+      const sinZ = Math.sin(az);
+      let { x, y, z } = point;
+      let ny = y * cosX - z * sinX;
+      let nz = y * sinX + z * cosX;
+      y = ny;
+      z = nz;
+      let nx = x * cosY + z * sinY;
+      nz = -x * sinY + z * cosY;
+      x = nx;
+      z = nz;
+      nx = x * cosZ - y * sinZ;
+      ny = x * sinZ + y * cosZ;
+      return { x: nx, y: ny, z };
+    }
+
+    function projectMerkabaPoint(point, centerX, centerY, radius) {
+      const depth = 3.2;
+      const perspective = depth / (depth + point.z);
+      return {
+        x: centerX + point.x * radius * perspective,
+        y: centerY + point.y * radius * perspective,
+        z: point.z,
+        perspective
+      };
+    }
+
+    function drawMerkabaOverlay(center, scalePx, now, motionBurst = 0, bassPulse = 0, highPulse = 0) {
+      const control = state.merkabaControls;
+      if (!control.enabled || control.opacity <= 0 || !center.ok) return;
+
+      const bassPop = clamp(bassPulse, 0, 1.8);
+      const highPop = clamp(highPulse, 0, 1.8);
+      const centerX = (1 - center.x) * window.innerWidth;
+      const centerY = center.y * window.innerHeight - scalePx * 0.04;
+      const radius = scalePx * 0.82 * control.scale * (1 + motionBurst * 0.035 + bassPop * 0.03 + highPop * 0.025);
+      const poseActive = state.poseConfidence > 0.25;
+      const density = poseActive ? Math.min(2, clamp(Math.round(control.density), 1, 5)) : clamp(Math.round(control.density), 1, 5);
+      const spin = now * 0.00042 * control.speed;
+      const tetra = [
+        { x: 0, y: -1.05, z: 0 },
+        { x: -0.92, y: 0.52, z: -0.54 },
+        { x: 0.92, y: 0.52, z: -0.54 },
+        { x: 0, y: 0.52, z: 1.08 }
+      ];
+      const edges = [[0, 1], [0, 2], [0, 3], [1, 2], [2, 3], [3, 1]];
+
+      ctx.save();
+      ctx.globalCompositeOperation = "color-dodge";
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.shadowBlur = 14;
+
+      for (let layer = 0; layer < density; layer++) {
+        const layerT = density === 1 ? 0 : layer / (density - 1);
+        const layerScale = 0.72 + layerT * 0.56;
+        const alpha = control.opacity * (0.32 + layerT * 0.32);
+        const color = FIREWORK_COLORS[(layer + Math.floor(now * 0.0012)) % FIREWORK_COLORS.length];
+        const ax = spin * (0.72 + layerT * 0.18) + layer * 0.17;
+        const ay = spin * (1.18 - layerT * 0.14) + layer * 0.31;
+        const az = -spin * (0.54 + layerT * 0.2);
+
+        for (const ySign of [1, -1]) {
+          const projected = tetra.map(point => {
+            const vertical = point.y * ySign;
+            const topBias = clamp((-vertical + 1.05) / 2.1, 0, 1);
+            const lowerBias = clamp((vertical + 1.05) / 2.1, 0, 1);
+            const beatScale = 1 + lowerBias * bassPop * 0.22 + topBias * highPop * 0.2;
+            const rotated = rotateMerkabaPoint({
+              x: point.x * layerScale * beatScale,
+              y: point.y * ySign * layerScale * beatScale,
+              z: point.z * layerScale * beatScale
+            }, ax, ay, az);
+            return projectMerkabaPoint(rotated, centerX, centerY, radius);
+          });
+
+          ctx.strokeStyle = color;
+          ctx.shadowColor = color;
+          ctx.globalAlpha = alpha * (1 + bassPop * 0.12 + highPop * 0.12) * (ySign > 0 ? 1 : 0.82);
+          ctx.lineWidth = Math.max(0.8, scalePx * (0.004 + layerT * 0.002) * (1 + bassPop * 0.16 + highPop * 0.14));
+          for (const [from, to] of edges) {
+            const a = projected[from];
+            const b = projected[to];
+            const depthAlpha = clamp((a.perspective + b.perspective) * 0.5, 0.58, 1.22);
+            ctx.globalAlpha = alpha * depthAlpha * (ySign > 0 ? 1 : 0.82);
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.stroke();
+          }
+        }
+      }
+
+      ctx.restore();
+    }
+
+    function drawVideoBackdrop() {
+      if (video.readyState < 2 || !video.videoWidth || !video.videoHeight) return;
+      const darkness = clamp(state.videoDarkness, 0, 1);
+      if (darkness >= 1) return;
+
+      const stageW = window.innerWidth;
+      const stageH = window.innerHeight;
+      const videoAspect = video.videoWidth / video.videoHeight;
+      const stageAspect = stageW / stageH;
+      let srcX = 0;
+      let srcY = 0;
+      let srcW = video.videoWidth;
+      let srcH = video.videoHeight;
+
+      if (videoAspect > stageAspect) {
+        srcW = video.videoHeight * stageAspect;
+        srcX = (video.videoWidth - srcW) * 0.5;
+      } else {
+        srcH = video.videoWidth / stageAspect;
+        srcY = (video.videoHeight - srcH) * 0.5;
+      }
+
+      ctx.save();
+      ctx.globalCompositeOperation = "source-over";
+      ctx.globalAlpha = 1 - darkness;
+      ctx.filter = "none";
+      ctx.translate(stageW, 0);
+      ctx.scale(-1, 1);
+      ctx.drawImage(video, srcX, srcY, srcW, srcH, 0, 0, stageW, stageH);
+      ctx.restore();
+    }
+
+    function getCoverSourceRect(sourceW, sourceH, targetW, targetH) {
+      const sourceAspect = sourceW / sourceH;
+      const targetAspect = targetW / targetH;
+      let srcX = 0;
+      let srcY = 0;
+      let srcW = sourceW;
+      let srcH = sourceH;
+      if (sourceAspect > targetAspect) {
+        srcW = sourceH * targetAspect;
+        srcX = (sourceW - srcW) * 0.5;
+      } else {
+        srcH = sourceW / targetAspect;
+        srcY = (sourceH - srcH) * 0.5;
+      }
+      return { srcX, srcY, srcW, srcH };
+    }
+
+    function drawWinningCameraCaptureBackdrop() {
+      if (!state.winCapture.active || !winCaptureCanvas.width || !winCaptureCanvas.height) return;
+      const darkness = clamp(state.videoDarkness, 0, 1);
+      const stageW = window.innerWidth;
+      const stageH = window.innerHeight;
+      const { srcX, srcY, srcW, srcH } = getCoverSourceRect(winCaptureCanvas.width, winCaptureCanvas.height, stageW, stageH);
+      ctx.save();
+      ctx.globalCompositeOperation = "source-over";
+      ctx.globalAlpha = 1 - darkness;
+      ctx.filter = "none";
+      ctx.drawImage(winCaptureCanvas, srcX, srcY, srcW, srcH, 0, 0, stageW, stageH);
+      ctx.restore();
+    }
+
+    function clearWinningCameraCapture() {
+      state.winCapture.active = false;
+      state.winCapture.dataUrl = "";
+      state.winCapture.preWinFrames = [];
+      state.winCapture.uploaded = false;
+      state.winCapture.uploading = false;
+      state.winCapture.capturedAt = 0;
+      winCaptureCtx.clearRect(0, 0, winCaptureCanvas.width, winCaptureCanvas.height);
+    }
+
+    function captureCameraFrameDataUrl(now, targetW = 960, targetH = 540) {
+      if (video.readyState < 2 || !video.videoWidth || !video.videoHeight) return null;
+      const { srcX, srcY, srcW, srcH } = getCoverSourceRect(video.videoWidth, video.videoHeight, targetW, targetH);
+      winCaptureCanvas.width = targetW;
+      winCaptureCanvas.height = targetH;
+      winCaptureCtx.save();
+      winCaptureCtx.clearRect(0, 0, targetW, targetH);
+      winCaptureCtx.translate(targetW, 0);
+      winCaptureCtx.scale(-1, 1);
+      winCaptureCtx.drawImage(video, srcX, srcY, srcW, srcH, 0, 0, targetW, targetH);
+      winCaptureCtx.restore();
+      return {
+        dataUrl: winCaptureCanvas.toDataURL("image/png"),
+        capturedAt: new Date(Date.now() - Math.max(0, performance.now() - now)).toISOString()
+      };
+    }
+
+    function capturePreWinBounceFrame(snapshot, now) {
+      if (!state.winCapture.enabled || state.winCapture.preWinCount <= 0 || snapshot.won) return;
+      const frame = captureCameraFrameDataUrl(now);
+      if (!frame) return;
+      state.winCapture.preWinFrames.push({
+        ...frame,
+        points: snapshot.points,
+        goal: snapshot.goal
+      });
+      if (state.winCapture.preWinFrames.length > state.winCapture.preWinCount) {
+        state.winCapture.preWinFrames.splice(0, state.winCapture.preWinFrames.length - state.winCapture.preWinCount);
+      }
+    }
+
+    function captureWinningCameraFrame(snapshot, now) {
+      if (!state.winCapture.enabled) return;
+      const frame = captureCameraFrameDataUrl(now, 1280, 720);
+      if (!frame) return;
+      state.winCapture.active = true;
+      state.winCapture.capturedAt = now;
+      state.winCapture.uploaded = false;
+      state.winCapture.dataUrl = frame.dataUrl;
+      if (state.winCapture.uploadEnabled) {
+        void uploadWinningCameraCapture(snapshot, now, frame);
+      }
+    }
+
+    async function uploadCaptureFrame(frame, snapshot, kind, sequence = 0) {
+      const imageData = frame?.dataUrl || state.winCapture.dataUrl;
+      if (!imageData) return;
+      const response = await fetch(state.winCapture.uploadEndpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          imageData,
+          capturedAt: frame?.capturedAt || new Date().toISOString(),
+          points: frame?.points ?? snapshot.points,
+          goal: frame?.goal ?? snapshot.goal,
+          kind,
+          sequence
+        })
+      });
+      if (!response.ok) throw new Error(`Capture upload ${response.status}`);
+    }
+
+    async function uploadWinningCameraCapture(snapshot, now, winningFrame = null) {
+      if (!state.winCapture.dataUrl || state.winCapture.uploading || state.winCapture.uploaded) return;
+      state.winCapture.uploading = true;
+      try {
+        for (let i = 0; i < state.winCapture.preWinFrames.length; i++) {
+          const frame = state.winCapture.preWinFrames[i];
+          await uploadCaptureFrame(frame, snapshot, "pre-win-bounce", i + 1);
+        }
+        await uploadCaptureFrame(winningFrame || { dataUrl: state.winCapture.dataUrl }, snapshot, "win", state.winCapture.preWinFrames.length + 1);
+        state.winCapture.uploaded = true;
+      } catch (error) {
+        console.error(error);
+        if (state.bootyCounterConfig.showDebugPanel) setError("Win photo upload failed.");
+      } finally {
+        state.winCapture.uploading = false;
+      }
+    }
+
+    function drawFirePose(landmarks, now) {
+      const ls = getLandmark(landmarks, 11);
+      const rs = getLandmark(landmarks, 12);
+      const lh = getLandmark(landmarks, 23);
+      const rh = getLandmark(landmarks, 24);
+      const le = getLandmark(landmarks, 13);
+      const re = getLandmark(landmarks, 14);
+      const lw = getLandmark(landmarks, 15);
+      const rw = getLandmark(landmarks, 16);
+      const lk = getLandmark(landmarks, 25);
+      const rk = getLandmark(landmarks, 26);
+      const la = getLandmark(landmarks, 27);
+      const ra = getLandmark(landmarks, 28);
+      const headPoint = getHeadPoint(landmarks);
+      const center = computeBodyCenter(landmarks);
+      updateMotionDrive(center, now);
+      updateBootyCounterFromPose(landmarks, now);
+      const scalePx = Math.max(70, center.scale * window.innerHeight * 1.7);
+      const lp = le && lw ? extendPoint(le, lw, scalePx * 0.08) : lw;
+      const rp = re && rw ? extendPoint(re, rw, scalePx * 0.08) : rw;
+      const flicker = Math.sin(now * 0.02) * 0.04 + Math.sin(now * 0.05) * 0.025;
+      const booty = state.bodyControls.booty;
+      const bottomWidth = state.bodyControls.bottomWidth;
+      const fluidity = state.bodyControls.fluidity;
+      const rippleSize = state.bodyControls.rippleSize;
+      const ghostsFx = state.effectsControls.ghosts;
+      const tonguesFx = state.effectsControls.tongues;
+      const edgeFx = state.effectsControls.edgeTurbulence;
+      const qualityScale = [0.58, 0.74, 0.88, 1][state.quality.level];
+      const bassDrive = getBandDrive("bass");
+      const midlowDrive = getBandDrive("midlow");
+      const midhighDrive = getBandDrive("midhigh");
+      const highDrive = getBandDrive("high");
+      const motionEnergy = clamp(state.motion.energy, 0, 1.6);
+      const motionBurst = clamp(state.motion.burst, 0, 1.8);
+      const bendBase = fluidity * (motionEnergy * 0.5 + motionBurst * 2.2);
+      const bendX = -state.motion.dirX * scalePx * 0.08 * bendBase;
+      const bendY = -state.motion.dirY * scalePx * 0.11 * bendBase - scalePx * 0.025 * bendBase;
+      const rawGeom = {
+        ls, rs, lh, rh, le, re, lp, rp, lk, rk, la, ra, headPoint,
+        pelvis: getMidPoint(lh, rh),
+        torso: getMidPoint(getMidPoint(ls, rs), getMidPoint(lh, rh))
+      };
+      const geom = smoothPoseGeom(rawGeom, now);
+      const snapshotShape = {
+        bootyMul: booty,
+        bottomWidthMul: bottomWidth,
+        fluidityMul: fluidity,
+        bendX,
+        bendY,
+        motionBurst: 0,
+        time: 0,
+        torsoMul: 0.94,
+        shoulderMul: 0.96,
+        upperArmMul: 0.94,
+        forearmMul: 0.92,
+        upperLegMul: 0.94,
+        lowerLegMul: 0.9,
+        jointMul: 0.92,
+        neckMul: 0.92,
+        headMulX: 1.16,
+        headMulY: 1.26,
+        headLift: 0.02,
+        handMul: 0.92,
+        handFlareMul: 0.92,
+        footMul: 0.88
+      };
+      const redLayer = buildLayerConfig({
+        blur: 48,
+        alpha: 0.92 + bassDrive.pulse * 0.18,
+        color: "rgba(210, 8, 0, 0.72)",
+        shape: {
+          bootyMul: booty,
+          bottomWidthMul: bottomWidth * (1 + bassDrive.pulse * 0.16),
+          fluidityMul: fluidity,
+          bendX,
+          bendY,
+          motionBurst,
+          time: now,
+          torsoMul: 1.18 * (1 + bassDrive.pulse * 0.08), shoulderMul: 1.16, upperArmMul: 1.18, forearmMul: 1.18,
+          upperLegMul: 1.16, lowerLegMul: 1.1, jointMul: 1.12,
+          neckMul: 1.08, headMulX: 1.72, headMulY: 1.92, headLift: 0.06,
+          handMul: 1.18, handFlareMul: 1.42, footMul: 1.04
+        }
+      }, state.layerControls.red, flicker * 0.08);
+      const orangeLayer = buildLayerConfig({
+        blur: 30,
+        alpha: 0.74 + midlowDrive.pulse * 0.18,
+        color: "rgba(255, 118, 10, 0.36)",
+        shape: {
+          bootyMul: booty,
+          bottomWidthMul: bottomWidth * (1 + midlowDrive.pulse * 0.12),
+          fluidityMul: fluidity,
+          bendX: bendX * 0.92,
+          bendY: bendY * 0.92,
+          motionBurst,
+          time: now,
+          torsoMul: 1.02 * (1 + midlowDrive.pulse * 0.06), shoulderMul: 1.04, upperArmMul: 1.06, forearmMul: 1.04,
+          upperLegMul: 1.1, lowerLegMul: 1.06, jointMul: 1.1,
+          neckMul: 1.02, headMulX: 1.42, headMulY: 1.56, headLift: 0.025,
+          handMul: 1.14, handFlareMul: 1.1, footMul: 1.04
+        }
+      }, state.layerControls.orange, flicker * 0.06);
+      const yellowLayer = buildLayerConfig({
+        blur: 16,
+        alpha: 0.88 + midhighDrive.pulse * 0.18,
+        color: "rgba(255, 226, 66, 0.96)",
+        shape: {
+          bootyMul: booty,
+          bottomWidthMul: bottomWidth * (1 + midhighDrive.pulse * 0.08),
+          fluidityMul: fluidity,
+          bendX: bendX * 0.82,
+          bendY: bendY * 0.82,
+          motionBurst,
+          time: now,
+          torsoMul: 0.72 * (1 + midhighDrive.pulse * 0.06), shoulderMul: 0.72, upperArmMul: 0.68, forearmMul: 0.66,
+          upperLegMul: 0.76, lowerLegMul: 0.7, jointMul: 0.72,
+          neckMul: 0.68, headMulX: 1.02, headMulY: 1.12, headLift: 0.005,
+          handMul: 0.74, handFlareMul: 0.72, footMul: 0.78
+        }
+      }, state.layerControls.yellow);
+      const whiteLayer = buildLayerConfig({
+        blur: 7,
+        alpha: 0.96 + highDrive.pulse * 0.16,
+        color: "rgba(255, 248, 238, 0.96)",
+        shape: {
+          bootyMul: booty,
+          bottomWidthMul: bottomWidth * (1 + highDrive.pulse * 0.05),
+          fluidityMul: fluidity,
+          bendX: bendX * 0.7,
+          bendY: bendY * 0.7,
+          motionBurst,
+          time: now,
+          torsoMul: 0.42 * (1 + highDrive.pulse * 0.04), shoulderMul: 0.36, upperArmMul: 0.32, forearmMul: 0.3,
+          upperLegMul: 0.38, lowerLegMul: 0.32, jointMul: 0.34,
+          neckMul: 0.34, headMulX: 0.56, headMulY: 0.64, headLift: 0,
+          handMul: 0.28, handFlareMul: 0.32, footMul: 0.3
+        }
+      }, state.layerControls.white);
+
+      if (now - state.lastGhostAt > 40 && state.perfToggles.ghostTrails && ghostsFx > 0.02 && state.quality.level > 0) {
+        state.ghostFrames.push({
+          at: now,
+          scalePx,
+          geom: cloneGeom(geom),
+          shape: { ...snapshotShape }
+        });
+        state.lastGhostAt = now;
+      }
+      const maxGhosts = Math.round((4 + state.quality.level * 3) * ghostsFx);
+      if (state.ghostFrames.length > maxGhosts) state.ghostFrames.splice(0, state.ghostFrames.length - maxGhosts);
+
+      // Composite from outermost to innermost with a slow heat shimmer at rest
+      // and stronger gusts only on sharp motion bursts.
+      if (state.quality.level <= 2) {
+        renderFlattenedFlame([redLayer, orangeLayer, yellowLayer, whiteLayer].filter((layer) => layer !== whiteLayer || state.perfToggles.whiteCore), now, {
+          geom,
+          scalePx,
+          motionBurst,
+          motionEnergy,
+          rippleSize,
+          qualityScale
+        });
+      } else {
+        renderFlameLayer(edgeCtx, geom, scalePx, redLayer);
+        renderFlameLayer(glowCtx, geom, scalePx, orangeLayer);
+        renderFlameLayer(shellCtx, geom, scalePx, yellowLayer);
+        innerCoreCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+        if (state.perfToggles.whiteCore) {
+          renderFlameLayer(innerCoreCtx, geom, scalePx, whiteLayer);
+        }
+        drawHeatLayer(edgeCanvas, now, {
+          alpha: 1,
+          strip: Math.max(12, Math.round(18 / qualityScale)),
+          calmAmpX: (0.6 + motionEnergy * 0.6) * rippleSize * qualityScale,
+          burstAmpX: (14 + motionBurst * 10) * rippleSize * qualityScale,
+          calmAmpY: 0.04,
+          burstAmpY: 1.1 * rippleSize * qualityScale,
+          calmSpeed: 0.00022,
+          burstSpeed: 0.0018,
+          burst: motionBurst,
+          seed: 0.6,
+          composite: "screen"
+        });
+      }
+      if (state.perfToggles.edgeBoost && state.quality.level >= 3) {
+        drawHeatLayer(edgeCanvas, now, {
+          alpha: (0.32 + motionBurst * 0.12) * edgeFx,
+          strip: Math.max(8, Math.round(10 / qualityScale)),
+          calmAmpX: 0.08 * edgeFx,
+          burstAmpX: (4 + motionBurst * 10) * rippleSize * edgeFx * qualityScale,
+          calmAmpY: 0.04,
+          burstAmpY: 1.5 * rippleSize * edgeFx * qualityScale,
+          calmSpeed: 0.0002,
+          burstSpeed: 0.0022,
+          burst: motionBurst * 1.1,
+          seed: 4.3,
+          composite: "color-dodge"
+        });
+      }
+      if (state.perfToggles.glowHeat && state.quality.level >= 3) {
+        drawHeatLayer(glowCanvas, now, {
+          alpha: 0.78 + motionBurst * 0.08,
+          strip: 16,
+          calmAmpX: (0.45 + motionEnergy * 0.45) * rippleSize,
+          burstAmpX: (11 + motionBurst * 8) * rippleSize,
+          calmAmpY: 0.035,
+          burstAmpY: 0.75 * rippleSize,
+          calmSpeed: 0.00028,
+          burstSpeed: 0.0017,
+          burst: motionBurst,
+          seed: 1.2,
+          composite: "lighter"
+        });
+        drawHeatLayer(shellCanvas, now, {
+          alpha: 0.94 + motionBurst * 0.06,
+          strip: 14,
+          calmAmpX: (0.28 + motionEnergy * 0.3) * rippleSize,
+          burstAmpX: (6.4 + motionBurst * 4.8) * rippleSize,
+          calmAmpY: 0.02,
+          burstAmpY: 0.42 * rippleSize,
+          calmSpeed: 0.00034,
+          burstSpeed: 0.00145,
+          burst: motionBurst * 0.88,
+          seed: 1.9,
+          composite: "screen"
+        });
+        if (state.perfToggles.whiteCore && state.quality.level >= 3) {
+          drawHeatLayer(innerCoreCanvas, now, {
+            alpha: 0.96 + motionBurst * 0.05,
+            strip: 12,
+            calmAmpX: (0.12 + motionEnergy * 0.14) * rippleSize,
+            burstAmpX: (2.2 + motionBurst * 1.8) * rippleSize,
+            calmAmpY: 0.01,
+            burstAmpY: 0.18 * rippleSize,
+            calmSpeed: 0.00042,
+            burstSpeed: 0.0011,
+            burst: motionBurst * 0.72,
+            seed: 2.6,
+            composite: "screen"
+          });
+        }
+      }
+      if (state.perfToggles.hotCores && state.quality.level >= 2) {
+        drawSelectiveHotCores(geom, scalePx, { bass: bassDrive, midlow: midlowDrive, midhigh: midhighDrive, high: highDrive }, now);
+      }
+
+      const ghostA = getDelayedGhost(110, now);
+      const ghostB = getDelayedGhost(220, now);
+      if (state.perfToggles.ghostTrails && state.quality.level >= 2 && ghostB && ghostsFx > 0.04) drawGhostSilhouette(ghostB, now, 0.16 * ghostsFx, 5.4);
+      if (state.perfToggles.ghostTrails && state.quality.level >= 2 && ghostA && ghostsFx > 0.04) drawGhostSilhouette(ghostA, now, 0.22 * ghostsFx, 4.8);
+
+      const tongueBendX = -state.motion.dirX * (0.28 + motionBurst * 0.24);
+      const tongueBendY = -Math.abs(state.motion.dirY) * 0.5 - 0.82;
+      if (state.perfToggles.velocityLicks) drawVelocityFlameLicks(geom, scalePx, now, motionBurst);
+      drawFlameTongues(state.perfToggles.flameTongues && tonguesFx > 0.04 && geom.headPoint && { x: geom.headPoint.x, y: geom.headPoint.y - scalePx * 0.1 }, now, {
+        color: "rgba(255, 244, 200, 0.34)",
+        count: Math.max(1, Math.round((2 + state.quality.level) * tonguesFx)),
+        length: scalePx * (0.26 + motionBurst * 0.08) * (0.7 + tonguesFx * 0.3),
+        bendX: tongueBendX,
+        bendY: tongueBendY,
+        spread: 0.54,
+        alpha: 0.34 * tonguesFx
+      });
+      drawFlameTongues(state.perfToggles.flameTongues && tonguesFx > 0.04 && geom.lp && { x: geom.lp.x, y: geom.lp.y - scalePx * 0.03 }, now, {
+        color: "rgba(255, 190, 70, 0.26)",
+        count: Math.max(1, Math.round((1 + state.quality.level * 0.6) * tonguesFx)),
+        length: scalePx * (0.18 + motionBurst * 0.05) * (0.7 + tonguesFx * 0.3),
+        bendX: tongueBendX * 0.8 - 0.18,
+        bendY: tongueBendY,
+        spread: 0.62,
+        alpha: 0.26 * tonguesFx
+      });
+      drawFlameTongues(state.perfToggles.flameTongues && tonguesFx > 0.04 && geom.rp && { x: geom.rp.x, y: geom.rp.y - scalePx * 0.03 }, now, {
+        color: "rgba(255, 190, 70, 0.26)",
+        count: Math.max(1, Math.round((1 + state.quality.level * 0.6) * tonguesFx)),
+        length: scalePx * (0.18 + motionBurst * 0.05) * (0.7 + tonguesFx * 0.3),
+        bendX: tongueBendX * 0.8 + 0.18,
+        bendY: tongueBendY,
+        spread: 0.62,
+        alpha: 0.26 * tonguesFx
+      });
+
+      const emitters = [];
+      if (geom.headPoint) emitters.push({ x: geom.headPoint.x, y: geom.headPoint.y - scalePx * 0.06, weight: 1, spread: 24, lift: 18, size: 1.2 });
+      if (geom.lp) emitters.push({ x: geom.lp.x, y: geom.lp.y, weight: 0.92, spread: 18, lift: 10, size: 1.08 });
+      if (geom.rp) emitters.push({ x: geom.rp.x, y: geom.rp.y, weight: 0.92, spread: 18, lift: 10, size: 1.08 });
+      if (state.perfToggles.particles) emitBandParticles(center, emitters);
+      drawMerkabaOverlay(center, scalePx, now, motionBurst, bassDrive.pulse, highDrive.pulse);
+      centerReadout.textContent = center.ok
+        ? `Center x ${center.x.toFixed(3)} • y ${center.y.toFixed(3)} • scale ${center.scale.toFixed(3)}`
+        : "Center x -- • y -- • scale --";
+
+      let visiblePoints = 0;
+      for (const p of landmarks) {
+        if (p && (p.visibility ?? 1) >= 0.45) visiblePoints++;
+      }
+      state.landmarkCount = visiblePoints;
+    }
+
+    function drawFrame(now) {
+      if (!state.running) return;
+      try {
+        state.frameCount++;
+        if (state.frameCount === 1) setStatus("Render loop started.");
+
+        if (!state.lastFrameAt) state.lastFrameAt = now;
+        const frameMs = now - state.lastFrameAt;
+        const dt = Math.min(0.04, frameMs / 1000 || 0.016);
+        state.lastFrameAt = now;
+        const fps = frameMs > 0 ? 1000 / frameMs : 0;
+        state.fpsEMA = state.fpsEMA ? state.fpsEMA * 0.85 + fps * 0.15 : fps;
+        updateQualityGovernor();
+        updateAudioBands();
+
+        ctx.globalCompositeOperation = "source-over";
+        ctx.fillStyle = "#000";
+        ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+        if (state.winCapture.active) drawWinningCameraCaptureBackdrop();
+        else if (state.perfToggles.backdrop) drawVideoBackdrop();
+
+        if (
+          state.landmarker &&
+          video.readyState >= 2 &&
+          video.currentTime !== state.lastVideoTime &&
+          now - state.lastDetectAt >= state.detectEveryMs
+        ) {
+          state.lastVideoTime = video.currentTime;
+          state.lastDetectAt = now;
+          const t0 = performance.now();
+          state.result = state.landmarker.detectForVideo(video, now);
+          const inferenceMs = performance.now() - t0;
+          state.inferenceEMA = state.inferenceEMA ? state.inferenceEMA * 0.8 + inferenceMs * 0.2 : inferenceMs;
+        }
+
+        const pose = state.result?.landmarks?.[0];
+        if (pose && pose.length) {
+          drawFirePose(pose, now);
+          state.poseConfidence = pose.reduce((acc, p) => acc + (p.visibility ?? 0), 0) / pose.length;
+        } else {
+          state.poseConfidence = 0;
+          state.landmarkCount = 0;
+          updateBootyCounterWithoutPose(now);
+          centerReadout.textContent = "Center x -- • y -- • scale --";
+        }
+
+        if (state.perfToggles.particles) drawEmbers(dt);
+        drawBootyPointBursts(dt);
+        drawWinningAnimation(dt);
+
+        const poseLabel = state.poseConfidence > 0.55 ? "locked" : state.poseConfidence > 0.25 ? "searching" : "none";
+        statsEl.textContent = `FPS ${state.fpsEMA.toFixed(1)} • inference ${state.inferenceEMA.toFixed(1)} ms • pose ${poseLabel} • points ${state.landmarkCount} • quality ${state.quality.label}`;
+      } catch (error) {
+        console.error(error);
+        setStatus("Render loop error.");
+        setError(error && error.message ? error.message : String(error));
+      } finally {
+        requestAnimationFrame(drawFrame);
+      }
+    }
+
+    async function createLandmarker() {
+      setStatus("Loading tracker runtime...");
+      if (!state.mpVision) {
+        state.mpVision = await import(BUNDLE_URL);
+      }
+      const { FilesetResolver, PoseLandmarker } = state.mpVision;
+      state.connections = PoseLandmarker.POSE_CONNECTIONS || [];
+      setStatus("Loading wasm...");
+      const vision = await FilesetResolver.forVisionTasks(WASM_URL);
+      setStatus("Loading pose model...");
+      return PoseLandmarker.createFromOptions(vision, {
+        baseOptions: { modelAssetPath: MODEL_URL },
+        runningMode: "VIDEO",
+        numPoses: 1,
+        minPoseDetectionConfidence: 0.5,
+        minPosePresenceConfidence: 0.5,
+        minTrackingConfidence: 0.5,
+        outputSegmentationMasks: false
+      });
+    }
+
+    async function start() {
+      startBtn.disabled = true;
+      setError("");
+      setStatus("Requesting camera + microphone...");
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: "user",
+            width: { ideal: 640 },
+            height: { ideal: 480 },
+            frameRate: { ideal: 30, max: 30 }
+          },
+          audio: {
+            echoCancellation: false,
+            noiseSuppression: false,
+            autoGainControl: false
+          }
+        });
+
+        video.srcObject = stream;
+        await video.play();
+        await setupAudio(stream);
+        state.landmarker = await createLandmarker();
+        state.running = true;
+        overlay.classList.add("hidden");
+        setStatus("Fire Dancer 3 live with audio bands.");
+        setError("");
+        requestAnimationFrame(drawFrame);
+      } catch (error) {
+        console.error(error);
+        startBtn.disabled = false;
+        setStatus("Camera start failed.");
+        setError(error && error.message ? error.message : "Unknown camera/model error.");
+      }
+    }
+
+    startBtn.addEventListener("click", start);
+    fullscreenBtn.addEventListener("click", () => document.documentElement.requestFullscreen?.());
+    togglePreviewBtn.addEventListener("click", () => {
+      const hidden = video.classList.toggle("hidden");
+      togglePreviewBtn.textContent = hidden ? "Show Preview" : "Hide Preview";
+    });
+    resetLayersBtn.addEventListener("click", () => {
+      state.layerControls = getDefaultLayerControls();
+      state.blurControl = getDefaultBlurControl();
+      state.sparkControls = getDefaultSparkControls();
+      state.bodyControls = getDefaultBodyControls();
+      state.bandConfig = getDefaultBandConfig();
+      state.bandControls = getDefaultBandControls();
+      state.effectsControls = getDefaultEffectsControls();
+      state.perfToggles = getDefaultPerfToggles();
+      state.videoDarkness = getDefaultVideoDarkness();
+      state.merkabaControls = getDefaultMerkabaControls();
+      syncLayerControlsFromState();
+      syncSparkControlsFromState();
+      syncBodyControlsFromState();
+      syncBandControlsFromState();
+      syncEffectsControlsFromState();
+      syncPerfTogglesFromState();
+      syncVideoDarknessFromState();
+      syncMerkabaControlsFromState();
+    });
+    resetMotionBtn.addEventListener("click", resetMotionState);
+    resetAudioBtn.addEventListener("click", resetAudioState);
+    clearGhostsBtn.addEventListener("click", clearGhostState);
+    resumeQualityBtn.addEventListener("click", resumeFlameQuality);
+    galleryBtn.addEventListener("click", openCaptureGallery);
+    galleryCloseBtn.addEventListener("click", () => galleryOverlay.classList.add("hidden"));
+    galleryOverlay.addEventListener("click", (event) => {
+      if (event.target === galleryOverlay) galleryOverlay.classList.add("hidden");
+    });
+    for (const input of [bootyEnabledInput, bootyStrictnessInput, bootyResetMsInput, bootyGoalInput, bootyShowStatusInput, bootyShowDebugInput, winCaptureEnabledInput, winCaptureUploadEnabledInput, winCapturePreWinCountInput]) {
+      input.addEventListener("input", syncBootyCounterConfigFromInputs);
+      input.addEventListener("change", syncBootyCounterConfigFromInputs);
+    }
+    previewWinBtn.addEventListener("click", () => {
+      const now = performance.now();
+      const snapshot = getPreviewWinSnapshot();
+      captureWinningCameraFrame(snapshot, now);
+      triggerWinningAnimation(now, true);
+    });
+    for (const input of bodyInputs) {
+      input.addEventListener("input", () => {
+        const key = input.dataset.bodyKey;
+        state.bodyControls[key] = Number(input.value) / 100;
+        updateBodyReadout();
+      });
+    }
+    for (const input of layerInputs) {
+      input.addEventListener("input", () => {
+        const layer = input.dataset.layer;
+        const key = input.dataset.key;
+        state.layerControls[layer][key] = Number(input.value) / 100;
+        updateLayerReadouts();
+      });
+    }
+    blurRadiusInput.addEventListener("input", () => {
+      state.blurControl = Number(blurRadiusInput.value) / 100;
+      updateLayerReadouts();
+    });
+    for (const input of bandInputs) {
+      input.addEventListener("input", () => {
+        const band = input.dataset.band;
+        const key = input.dataset.bandKey;
+        state.bandControls[band][key] = Number(input.value) / 100;
+        updateBandReadouts();
+      });
+    }
+    for (const input of sparkInputs) {
+      input.addEventListener("input", () => {
+        const key = input.dataset.sparkKey;
+        state.sparkControls[key] = Number(input.value) / 100;
+        updateSparkReadout();
+      });
+    }
+    for (const input of effectsInputs) {
+      input.addEventListener("input", () => {
+        const key = input.dataset.effectsKey;
+        state.effectsControls[key] = Number(input.value) / 100;
+        updateEffectsReadout();
+      });
+    }
+    for (const input of perfInputs) {
+      input.addEventListener("change", () => {
+        state.perfToggles[input.dataset.perfKey] = input.checked;
+        if (input.dataset.perfKey === "ghostTrails" && !input.checked) clearGhostState();
+        if (!input.checked) primeQualityRecovery();
+        updatePerfReadout();
+      });
+    }
+    videoDarknessInput.addEventListener("input", () => {
+      state.videoDarkness = Number(videoDarknessInput.value) / 100;
+      updateVideoDarknessReadout();
+    });
+    merkabaEnabledInput.addEventListener("change", () => {
+      state.merkabaControls.enabled = merkabaEnabledInput.checked;
+      if (!merkabaEnabledInput.checked) primeQualityRecovery();
+      updateMerkabaReadout();
+    });
+    for (const input of merkabaInputs) {
+      input.addEventListener("input", () => {
+        const key = input.dataset.merkabaKey;
+        state.merkabaControls[key] = key === "density"
+          ? Number(input.value)
+          : Number(input.value) / 100;
+        updateMerkabaReadout();
+      });
+    }
+    bandEditor.addEventListener("pointerdown", (event) => {
+      const handle = findBandHandle(event.clientX, event.clientY);
+      if (handle === null) return;
+      state.draggingBandHandle = handle;
+      bandEditor.setPointerCapture(event.pointerId);
+      moveBandHandle(handle, event.clientX);
+    });
+    bandEditor.addEventListener("pointermove", (event) => {
+      if (state.draggingBandHandle === null) return;
+      moveBandHandle(state.draggingBandHandle, event.clientX);
+    });
+    const stopBandDrag = () => {
+      state.draggingBandHandle = null;
+      drawBandEditor();
+    };
+    bandEditor.addEventListener("pointerup", stopBandDrag);
+    bandEditor.addEventListener("pointercancel", stopBandDrag);
+    loadPresetBtn.addEventListener("click", () => {
+      if (!presetSelect.value) return;
+      applyPreset(presetSelect.value);
+    });
+    savePresetBtn.addEventListener("click", () => {
+      const targetName = presetSelect.value || presetNameInput.value;
+      savePreset(targetName);
+    });
+    saveAsPresetBtn.addEventListener("click", () => {
+      savePreset(presetNameInput.value);
+    });
+    exportPresetsBtn.addEventListener("click", async () => {
+      const blob = encodePresetBlob();
+      try {
+        await navigator.clipboard.writeText(blob);
+        setError("");
+        setStatus("Presets copied to clipboard.");
+      } catch (error) {
+        console.error(error);
+        window.prompt("Copy presets JSON", blob);
+      }
+    });
+    importPresetsBtn.addEventListener("click", () => {
+      const pasted = window.prompt("Paste presets JSON");
+      if (!pasted) return;
+      try {
+        state.presets = decodePresetBlob(pasted);
+        persistPresets();
+        renderPresetOptions();
+        setError("");
+        setStatus("Presets imported.");
+      } catch (error) {
+        console.error(error);
+        setError("Preset import failed.");
+      }
+    });
+    deletePresetBtn.addEventListener("click", () => {
+      if (!presetSelect.value) return;
+      deletePreset(presetSelect.value);
+    });
+    presetSelect.addEventListener("change", () => {
+      if (presetSelect.value) presetNameInput.value = presetSelect.value;
+    });
+    fsExit.addEventListener("click", () => {
+      document.exitFullscreen?.();
+    });
+
+    window.addEventListener("error", (event) => {
+      setStatus("Runtime error.");
+      setError(event.message || "Unknown runtime error.");
+    });
+
+    window.addEventListener("unhandledrejection", (event) => {
+      const reason = event.reason && event.reason.message ? event.reason.message : String(event.reason);
+      setStatus("Unhandled promise error.");
+      setError(reason);
+    });
+
+    document.addEventListener("fullscreenchange", updateProjectionMode);
+    window.addEventListener("resize", resize);
+    loadPresetsFromStorage();
+    applyDefaultPreset();
+    syncLayerControlsFromState();
+    syncSparkControlsFromState();
+    syncBodyControlsFromState();
+    syncBandControlsFromState();
+    syncEffectsControlsFromState();
+    syncPerfTogglesFromState();
+    syncVideoDarknessFromState();
+    syncMerkabaControlsFromState();
+    syncBootyCounterConfigFromInputs();
+    loadWinningImages();
+    updateProjectionMode();
+    resize();
+  </script>
+</body>
+</html>
+
