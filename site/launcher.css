@@ -123,6 +123,46 @@ h1 {
   isolation: isolate;
 }
 
+.portalThumb img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  position: absolute;
+  inset: 0;
+  object-fit: cover;
+  object-position: center 42%;
+  transform: scale(1.015);
+  transition: transform 420ms ease, filter 420ms ease;
+}
+
+.portalThumb::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.2));
+}
+
+.fireFeed .portalThumb img {
+  filter: saturate(1.08) contrast(1.05);
+}
+
+.bodyFire .portalThumb img {
+  object-position: center 35%;
+  filter: saturate(1.03) contrast(1.08);
+}
+
+.galactica .portalThumb img {
+  object-position: center 48%;
+  filter: saturate(1.1) contrast(1.06);
+}
+
+.portalCard:hover .portalThumb img,
+.portalCard:focus-visible .portalThumb img {
+  transform: scale(1.055);
+  filter: saturate(1.14) contrast(1.08);
+}
+
 .portalText {
   display: grid;
   gap: 10px;

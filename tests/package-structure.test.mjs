@@ -23,10 +23,18 @@ test("public site is Camera Party Portals V1 with a three-app launcher", () => {
   assert.match(html, /href="\.\/apps\/v1-fire-webcam\/"/);
   assert.match(html, /href="\.\/apps\/firedancer-body\/"/);
   assert.match(html, /href="\.\/apps\/galactica\/"/);
+  assert.match(html, /\.\/assets\/portals\/fire-dancer-v1-v2\.webp/);
+  assert.match(html, /\.\/assets\/portals\/fire-dancer-body-v2\.webp/);
+  assert.match(html, /\.\/assets\/portals\/galactica-kaleidoscope-v2\.webp/);
 });
 
 test("public site contains only launcher assets and three app directories", () => {
-  assert.deepEqual(listTopLevelPublicEntries(), ["apps", "index.html", "launcher.css"]);
+  assert.deepEqual(listTopLevelPublicEntries(), ["apps", "assets", "index.html", "launcher.css"]);
+  assert.deepEqual(readdirSync(join(siteDir, "assets", "portals")).sort(), [
+    "fire-dancer-body-v2.webp",
+    "fire-dancer-v1-v2.webp",
+    "galactica-kaleidoscope-v2.webp"
+  ]);
   assert.deepEqual(readdirSync(join(siteDir, "apps")).sort(), [
     "firedancer-body",
     "galactica",
