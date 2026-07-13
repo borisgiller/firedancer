@@ -2,10 +2,14 @@
 
 Camera Party Portals V1 is a clean static launcher for three webcam-driven party/projection installations. The public app is rooted at `site/` and opens with a thumbnail picker at `site/index.html`.
 
+![Camera Party Portals V1 selection screen](assets/readme/camera-party-portals-selection-screen.jpg)
+
+Live demo: [borisgiller.com/firedancer](https://borisgiller.com/firedancer/)
+
 ## Included Apps
 
 - `site/apps/v1-fire-webcam/` - Fire Dancer V1, the older webcam fire/color-treatment app without body tracking.
-- `site/apps/firedancer-body/` - Fire Dancer 3, the latest pose/body-tracking flame silhouette app.
+- `site/apps/firedancer-body/` - Fire Dancer Body, the latest pose/body-tracking flame silhouette app.
 - `site/apps/galactica/` - Galactica Kaleidoscope, the webcam/mic mandala projection app.
 
 The deployable public surface is intentionally small:
@@ -14,6 +18,8 @@ The deployable public surface is intentionally small:
 site/
   index.html
   launcher.css
+assets/readme/
+  camera-party-portals-selection-screen.jpg
   apps/
     v1-fire-webcam/
     firedancer-body/
