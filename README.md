@@ -4,7 +4,7 @@ Camera Party Portals V1 is a clean static launcher for three webcam-driven party
 
 ![Camera Party Portals V1 selection screen](assets/readme/camera-party-portals-selection-screen.jpg)
 
-Live demo: [borisgiller.com/firedancer](https://borisgiller.com/firedancer/)
+Live demo: [BorisGiller.com/camera-party-portals-v1](https://borisgiller.com/camera-party-portals-v1/)
 
 ## Included Apps
 
